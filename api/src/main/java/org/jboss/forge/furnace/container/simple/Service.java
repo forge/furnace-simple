@@ -12,7 +12,7 @@ package org.jboss.forge.furnace.container.simple;
  * <p>
  * To register a type as a service, a file must be created with the name
  * <code>META-INF/services/org.jboss.forge.furnace.container.simple.Service</code>, and each service type name must be
- * added on a separate line:
+ * added to this file on a separate line:
  * <p>
  * 
  * <pre>
