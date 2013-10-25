@@ -1,0 +1,27 @@
+== Furnace Container: Simple
+:idprefix: id_ 
+
+This addon is a 'Furnace container' that provides *lifecycle* and *service registry* support for dependent addons. 
+Addons may depend on this to provide service instances to dependencies.
+
+=== Dependencies: None
+
+== Setup
+
+This Addon requires the following installation steps.
+
+=== Add configuration to pom.xml 
+
+To use this Furnace container, you must add it as a dependency in the *pom.xml* of your `forge-addon` classified artifact:
+
+      <dependency>
+         <groupId>org.jboss.forge.furnace.container</groupId>
+         <artifactId>simple</artifactId>
+         <classifier>forge-addon</classifier>
+         <version>${version}</version>
+      </dependency>
+      
+=== Add classes to the simple service registry.
+In order for dependencies to use your services, you must add service types to the service registry.
+
+== Features
