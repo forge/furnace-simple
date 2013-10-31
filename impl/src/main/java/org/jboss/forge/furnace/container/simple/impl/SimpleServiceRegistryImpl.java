@@ -38,6 +38,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> requestedType)
    {
       Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
@@ -45,7 +46,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
       {
          if (requestedType.isAssignableFrom(type))
          {
-            result.add(new SimpleExportedInstanceImpl<T>(furnace, addon, requestedType));
+            result.add(new SimpleExportedInstanceImpl<T>(furnace, addon, (Class<T>) type));
          }
       }
       return result;
