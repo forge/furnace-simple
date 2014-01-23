@@ -90,6 +90,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
                result.add(new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type));
             }
          }
+
          instancesCache.put(actualLoadedType.hashCode(), (Set) result);
       }
       return result;
@@ -132,7 +133,6 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
       ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(actualLoadedType.hashCode());
       if (result == null)
       {
-
          try
          {
             result = ClassLoaders.executeIn(addon.getClassLoader(), new Callable<ExportedInstance<T>>()
@@ -147,11 +147,16 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
                         return new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type);
                      }
                   }
-                  return new SimpleExportedInstanceImpl<>(furnace, addon, actualLoadedType);
+
+                  if (ClassLoaders.ownsClass(addon.getClassLoader(), actualLoadedType))
+                     return new SimpleExportedInstanceImpl<>(furnace, addon, actualLoadedType);
+
+                  return null;
                }
             });
 
-            instanceCache.put(actualLoadedType.hashCode(), result);
+            if (result != null)
+               instanceCache.put(actualLoadedType.hashCode(), result);
          }
          catch (Exception e)
          {
