@@ -34,7 +34,7 @@ public class SimpleContainer implements AddonLifecycleProvider
 {
    private static final String SERVICE_REGISTRATION_FILE_NAME = Service.class.getName();
 
-   private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<ClassLoader, Furnace>(
+   private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<>(
             new WeakHashMap<ClassLoader, Furnace>());
 
    private Furnace furnace;
@@ -75,7 +75,7 @@ public class SimpleContainer implements AddonLifecycleProvider
    public ServiceRegistry getServiceRegistry(Addon addon) throws Exception
    {
       URL resource = addon.getClassLoader().getResource("/META-INF/services/" + SERVICE_REGISTRATION_FILE_NAME);
-      Set<Class<?>> serviceTypes = new HashSet<Class<?>>();
+      Set<Class<?>> serviceTypes = new HashSet<>();
       if (resource != null)
       {
          InputStream stream = resource.openStream();
