@@ -41,12 +41,12 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
    @SuppressWarnings("unchecked")
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> requestedType)
    {
-      Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
+      Set<ExportedInstance<T>> result = new HashSet<>();
       for (Class<?> type : serviceTypes)
       {
          if (requestedType.isAssignableFrom(type))
          {
-            result.add(new SimpleExportedInstanceImpl<T>(furnace, addon, (Class<T>) type));
+            result.add(new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type));
          }
       }
       return result;
@@ -56,7 +56,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
    @SuppressWarnings("unchecked")
    public <T> Set<ExportedInstance<T>> getExportedInstances(String typeName)
    {
-      Set<ExportedInstance<T>> result = new HashSet<ExportedInstance<T>>();
+      Set<ExportedInstance<T>> result = new HashSet<>();
       if (ClassLoaders.containsClass(addon.getClassLoader(), typeName))
       {
          Class<T> type = (Class<T>) ClassLoaders.loadClass(addon.getClassLoader(), typeName);
@@ -77,13 +77,13 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
          {
             if (requestedType.isAssignableFrom(type))
             {
-               return new SimpleExportedInstanceImpl<T>(furnace, addon, (Class<T>) type);
+               return new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type);
             }
          }
          return null;
       }
 
-      return new SimpleExportedInstanceImpl<T>(furnace, addon, requestedType);
+      return new SimpleExportedInstanceImpl<>(furnace, addon, requestedType);
    }
 
    @Override
@@ -107,7 +107,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
    @Override
    public <T> Set<Class<T>> getExportedTypes(Class<T> type)
    {
-      Set<Class<T>> result = new HashSet<Class<T>>();
+      Set<Class<T>> result = new HashSet<>();
       for (Class<?> serviceType : serviceTypes)
       {
          if (type.isAssignableFrom(serviceType))
