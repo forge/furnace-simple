@@ -148,7 +148,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
                      }
                   }
 
-                  if (ClassLoaders.ownsClass(addon.getClassLoader(), actualLoadedType))
+                  if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz))
                      return new SimpleExportedInstanceImpl<>(furnace, addon, actualLoadedType);
 
                   return null;
