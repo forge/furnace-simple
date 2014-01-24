@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
@@ -32,6 +34,8 @@ import org.jboss.forge.furnace.util.Streams;
  */
 public class SimpleContainer implements AddonLifecycleProvider
 {
+   private static final Logger log = Logger.getLogger(SimpleContainer.class.getName());
+
    private static final String SERVICE_REGISTRATION_FILE_NAME = Service.class.getName();
 
    private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<>(
@@ -87,10 +91,30 @@ public class SimpleContainer implements AddonLifecycleProvider
                Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceType);
                serviceTypes.add(type);
             }
+            else
+            {
+               log.log(Level.WARNING,
+                        "Service class not enabled due to underlying classloading error. If this is unexpected, "
+                                 + "enable DEBUG logging to see the full stack trace: "
+                                 + getClassLoadingErrorMessage(addon, serviceType));
+               log.log(Level.FINE,
+                        "Service class not enabled due to underlying classloading error.",
+                        ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceType));
+            }
          }
 
       }
       return new SimpleServiceRegistryImpl(furnace, addon, serviceTypes);
+   }
+
+   private String getClassLoadingErrorMessage(Addon addon, String serviceType)
+   {
+      Throwable e = ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceType);
+      while (e.getCause() != null && e.getCause() != e)
+      {
+         e = e.getCause();
+      }
+      return e.getClass().getName() + ": " + e.getMessage();
    }
 
    @Override
