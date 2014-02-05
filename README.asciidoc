@@ -25,3 +25,44 @@ To use this Furnace container, you must add it as a dependency in the *pom.xml* 
 In order for dependencies to use your services, you must add service types to the service registry.
 
 == Features
+
+Provides simple service registration mechanism::
+Service types are not required to extend the `org.jboss.forge.furnace.container.simple.Service` interface, but may do so for reference purposes.
++
+[source,java]
+----
+public class ExampleService implements Service // (optional)
+{
+   // ...
+}
+----
++
+Service types may also receive the `Furnace` container instance as a constructor parameter: 
++
+[source,java]
+----
+public class ExampleService
+{
+   public ExampleService(Furnace furnace) {
+      // do something constructor-like
+   }
+}
+----
++
+To register a type as a service, a file must be created with the name
+<code>META-INF/services/org.jboss.forge.furnace.container.simple.Service</code>, and each service type name must be
+added to this file on a separate line:
++
+Example registration file:
++
+[source,text]
+----
+META-INF/services/org.jboss.forge.furnace.container.simple.Service
+......
+org.example.ExampleService
+org.example.ExampleService2
+org.my.custom.MyService
+......
+----
++
+TIP: Services registered in this way must exist in the same JAR file as the registry file.
