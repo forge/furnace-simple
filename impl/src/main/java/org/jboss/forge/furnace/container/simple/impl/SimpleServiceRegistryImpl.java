@@ -35,9 +35,9 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
    private final Addon addon;
    private final Set<Class<?>> serviceTypes;
 
-   private final Map<Integer, Class<?>> classCache = new WeakHashMap<>();
-   private final Map<Integer, ExportedInstance<?>> instanceCache = new WeakHashMap<>();
-   private final Map<Integer, Set<ExportedInstance<?>>> instancesCache = new WeakHashMap<>();
+   private final Map<String, Class<?>> classCache = new WeakHashMap<>();
+   private final Map<String, ExportedInstance<?>> instanceCache = new WeakHashMap<>();
+   private final Map<String, Set<ExportedInstance<?>>> instancesCache = new WeakHashMap<>();
 
    public SimpleServiceRegistryImpl(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes)
    {
@@ -78,7 +78,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
          return Collections.emptySet();
       }
 
-      Set<ExportedInstance<T>> result = (Set) instancesCache.get(actualLoadedType.hashCode());
+      Set<ExportedInstance<T>> result = (Set) instancesCache.get(actualLoadedType.getName());
 
       if (result == null)
       {
@@ -91,7 +91,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
             }
          }
 
-         instancesCache.put(actualLoadedType.hashCode(), (Set) result);
+         instancesCache.put(actualLoadedType.getName(), (Set) result);
       }
       return result;
    }
@@ -130,7 +130,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
          return null;
       }
 
-      ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(actualLoadedType.hashCode());
+      ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(actualLoadedType.getName());
       if (result == null)
       {
          try
@@ -156,7 +156,7 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
             });
 
             if (result != null)
-               instanceCache.put(actualLoadedType.hashCode(), result);
+               instanceCache.put(actualLoadedType.getName(), result);
          }
          catch (Exception e)
          {
@@ -243,12 +243,12 @@ public class SimpleServiceRegistryImpl implements ServiceRegistry
 
    private Class<?> loadAddonClass(String className) throws ClassNotFoundException
    {
-      Class<?> cached = classCache.get(className.hashCode());
+      Class<?> cached = classCache.get(className);
       if (cached == null)
       {
          Class<?> result = Class.forName(className, false, addon.getClassLoader());
          // potentially not thread-safe
-         classCache.put(className.hashCode(), result);
+         classCache.put(className, result);
          cached = result;
       }
 
