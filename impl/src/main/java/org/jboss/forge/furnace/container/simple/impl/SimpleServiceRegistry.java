@@ -15,6 +15,8 @@ import java.util.concurrent.Callable;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.container.simple.EventListener;
+import org.jboss.forge.furnace.container.simple.Service;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
@@ -24,7 +26,6 @@ import org.jboss.forge.furnace.util.ClassLoaders;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
  */
 public class SimpleServiceRegistry implements ServiceRegistry
 {
@@ -62,9 +63,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
    {
       Addons.waitUntilStarted(addon);
 
-      if(clazz.getClassLoader() != addon.getClassLoader())
-         return Collections.emptySet();
-      
       Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz.getName());
 
       if (result == null)
@@ -104,9 +102,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
       Assert.notNull(clazz, "Requested Class type may not be null");
       Addons.waitUntilStarted(addon);
 
-      if(clazz.getClassLoader() != addon.getClassLoader())
-         return null;
-         
       ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(clazz.getName());
       if (result == null)
       {
@@ -125,7 +120,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
                      }
                   }
 
-                  if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz))
+                  if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz) && isExtensionPointType(clazz))
                      return new SimpleExportedInstanceImpl<>(furnace, addon, clazz);
 
                   return null;
@@ -144,6 +139,13 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
       }
       return result;
+   }
+
+   private boolean isExtensionPointType(Class<?> clazz)
+   {
+      if (EventListener.class.isAssignableFrom(clazz) || Service.class.isAssignableFrom(clazz))
+         return true;
+      return false;
    }
 
    @Override

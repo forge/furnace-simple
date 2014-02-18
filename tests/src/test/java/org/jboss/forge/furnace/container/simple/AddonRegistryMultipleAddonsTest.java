@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryMultipleAddonsTest
+public class AddonRegistryMultipleAddonsTest implements Service
 {
 
    @Deployment

@@ -89,7 +89,8 @@ public class SimpleContainer implements AddonLifecycleProvider
             if (ClassLoaders.containsClass(addon.getClassLoader(), serviceType))
             {
                Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceType);
-               serviceTypes.add(type);
+               if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                  serviceTypes.add(type);
             }
             else
             {

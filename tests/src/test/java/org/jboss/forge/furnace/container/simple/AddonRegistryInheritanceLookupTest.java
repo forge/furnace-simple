@@ -31,10 +31,10 @@ import org.junit.runner.RunWith;
 
 /**
  * 
- * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryIncompatibleServiceLookupTest implements Service
+public class AddonRegistryInheritanceLookupTest implements Service
 {
 
    @Deployment
@@ -44,7 +44,6 @@ public class AddonRegistryIncompatibleServiceLookupTest implements Service
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClass(Aa.class)
                .addBeansXML()
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
@@ -60,10 +59,11 @@ public class AddonRegistryIncompatibleServiceLookupTest implements Service
    public static ForgeArchive getDeploymentDep2()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
-               .addClass(BB.class)
-               .addAsServiceProvider(Service.class, BB.class)
+               .addClass(PublishedServiceSubtype.class)
+               .addAsServiceProvider(Service.class, PublishedServiceSubtype.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
+                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
+                        AddonDependencyEntry.create("test:dep1")
                );
       return archive;
    }
@@ -71,10 +71,9 @@ public class AddonRegistryIncompatibleServiceLookupTest implements Service
    @Deployment(name = "test:dep1,1", testable = false, order = 1)
    public static ForgeArchive getDeploymentDep1()
    {
-      ForgeArchive archive = ShrinkWrap
-               .create(ForgeArchive.class)
-               .addClass(BB.class)
-               .addAsServiceProvider(Service.class, BB.class)
+      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+               .addClass(PublishedService.class)
+               .addAsServiceProvider(Service.class, PublishedService.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
                );
@@ -96,23 +95,31 @@ public class AddonRegistryIncompatibleServiceLookupTest implements Service
       ServiceRegistry depOneServiceRegistry = depOne.getServiceRegistry();
       ServiceRegistry depTwoServiceRegistry = depTwo.getServiceRegistry();
 
-      Assert.assertFalse(depOneServiceRegistry.hasService(Aa.class));
-      Assert.assertFalse(depOneServiceRegistry.hasService(Aa.class.getName()));
-      Assert.assertFalse(depTwoServiceRegistry.hasService(Aa.class));
-      Assert.assertFalse(depTwoServiceRegistry.hasService(Aa.class.getName()));
-      Assert.assertFalse(depOneServiceRegistry.hasService(BB.class));
-      Assert.assertTrue(depOneServiceRegistry.hasService(BB.class.getName()));
-      Assert.assertTrue(depTwoServiceRegistry.hasService(BB.class));
-      Assert.assertTrue(depTwoServiceRegistry.hasService(BB.class.getName()));
+      Assert.assertTrue(depOneServiceRegistry.hasService(PublishedService.class));
+      Assert.assertFalse(depOneServiceRegistry.hasService(PublishedServiceSubtype.class));
+      Assert.assertTrue(depTwoServiceRegistry.hasService(PublishedService.class));
+      Assert.assertTrue(depTwoServiceRegistry.hasService(PublishedServiceSubtype.class));
 
-      Assert.assertNotNull(depTwoServiceRegistry.getExportedInstance(BB.class.getName()));
+      Assert.assertNotNull(depOneServiceRegistry.getExportedInstance(PublishedService.class.getName()));
+      Assert.assertNotNull(depTwoServiceRegistry.getExportedInstance(PublishedService.class.getName()));
+      Assert.assertNull(depOneServiceRegistry.getExportedInstance(PublishedServiceSubtype.class.getName()));
+      Assert.assertNotNull(depTwoServiceRegistry.getExportedInstance(PublishedServiceSubtype.class.getName()));
 
-      Imported<BB> services = addonRegistry.getServices(BB.class);
-      Assert.assertFalse("Imported<BB> should have been satisfied", services.isUnsatisfied());
-      Assert.assertFalse("Imported<BB> should not have been ambiguous", services.isAmbiguous());
-      Iterator<BB> iterator2 = services.iterator();
+      Imported<PublishedService> services = addonRegistry.getServices(PublishedService.class);
+      Assert.assertFalse("Imported<PublishedService> should have been satisfied", services.isUnsatisfied());
+      Assert.assertTrue("Imported<PublishedService> should have been ambiguous", services.isAmbiguous());
+      Iterator<PublishedService> iterator = services.iterator();
+      Assert.assertTrue(iterator.hasNext());
+      Assert.assertThat(iterator.next(), is(instanceOf(PublishedService.class)));
+      Assert.assertTrue(iterator.hasNext());
+      Assert.assertThat(iterator.next(), is(instanceOf(PublishedService.class)));
+
+      Imported<PublishedServiceSubtype> services2 = addonRegistry.getServices(PublishedServiceSubtype.class);
+      Assert.assertFalse("Imported<PublishedServiceSubtype> should have been satisfied", services2.isUnsatisfied());
+      Assert.assertFalse("Imported<PublishedServiceSubtype> should not have been ambiguous", services2.isAmbiguous());
+      Iterator<PublishedServiceSubtype> iterator2 = services2.iterator();
       Assert.assertTrue(iterator2.hasNext());
-      Assert.assertThat(iterator2.next(), is(instanceOf(BB.class)));
+      Assert.assertThat(iterator2.next(), is(instanceOf(PublishedServiceSubtype.class)));
       Assert.assertFalse(iterator2.hasNext());
    }
 
