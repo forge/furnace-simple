@@ -31,10 +31,10 @@ import org.junit.runner.RunWith;
 
 /**
  * 
- * @author <a href="ggastald@redhat.com">George Gastaldi</a>
+ * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryMultipleAddonsTest
+public class AddonRegistryIncompatibleServiceLookupTest
 {
 
    @Deployment
@@ -44,6 +44,7 @@ public class AddonRegistryMultipleAddonsTest
    public static ForgeArchive getDeployment()
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+               .addClass(Aa.class)
                .addBeansXML()
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
@@ -72,8 +73,8 @@ public class AddonRegistryMultipleAddonsTest
    {
       ForgeArchive archive = ShrinkWrap
                .create(ForgeArchive.class)
-               .addClass(Aa.class)
-               .addAsServiceProvider(Service.class, Aa.class)
+               .addClass(BB.class)
+               .addAsServiceProvider(Service.class, BB.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
                );
@@ -95,29 +96,21 @@ public class AddonRegistryMultipleAddonsTest
       ServiceRegistry depOneServiceRegistry = depOne.getServiceRegistry();
       ServiceRegistry depTwoServiceRegistry = depTwo.getServiceRegistry();
 
-      Assert.assertTrue(depOneServiceRegistry.hasService(Aa.class));
-      Assert.assertFalse(depOneServiceRegistry.hasService(BB.class));
+      Assert.assertFalse(depOneServiceRegistry.hasService(Aa.class));
+      Assert.assertFalse(depOneServiceRegistry.hasService(Aa.class.getName()));
       Assert.assertFalse(depTwoServiceRegistry.hasService(Aa.class));
+      Assert.assertFalse(depTwoServiceRegistry.hasService(Aa.class.getName()));
+      Assert.assertFalse(depOneServiceRegistry.hasService(BB.class));
+      Assert.assertTrue(depOneServiceRegistry.hasService(BB.class.getName()));
       Assert.assertTrue(depTwoServiceRegistry.hasService(BB.class));
+      Assert.assertTrue(depTwoServiceRegistry.hasService(BB.class.getName()));
 
-      Assert.assertNull(depOneServiceRegistry.getExportedInstance(BB.class.getName()));
-      Assert.assertNull(depTwoServiceRegistry.getExportedInstance(Aa.class.getName()));
-
-      Assert.assertNotNull(depOneServiceRegistry.getExportedInstance(Aa.class.getName()));
       Assert.assertNotNull(depTwoServiceRegistry.getExportedInstance(BB.class.getName()));
 
-      Imported<Aa> services = addonRegistry.getServices(Aa.class);
-      Assert.assertFalse("Imported<Aa> should have been satisfied", services.isUnsatisfied());
-      Assert.assertFalse("Imported<Aa> should not have been ambiguous", services.isAmbiguous());
-      Iterator<Aa> iterator = services.iterator();
-      Assert.assertTrue(iterator.hasNext());
-      Assert.assertThat(iterator.next(), is(instanceOf(Aa.class)));
-      Assert.assertFalse(iterator.hasNext());
-
-      Imported<BB> services2 = addonRegistry.getServices(BB.class);
-      Assert.assertFalse("Imported<BB> should have been satisfied", services2.isUnsatisfied());
-      Assert.assertFalse("Imported<BB> should not have been ambiguous", services2.isAmbiguous());
-      Iterator<BB> iterator2 = services2.iterator();
+      Imported<BB> services = addonRegistry.getServices(BB.class);
+      Assert.assertFalse("Imported<BB> should have been satisfied", services.isUnsatisfied());
+      Assert.assertFalse("Imported<BB> should not have been ambiguous", services.isAmbiguous());
+      Iterator<BB> iterator2 = services.iterator();
       Assert.assertTrue(iterator2.hasNext());
       Assert.assertThat(iterator2.next(), is(instanceOf(BB.class)));
       Assert.assertFalse(iterator2.hasNext());

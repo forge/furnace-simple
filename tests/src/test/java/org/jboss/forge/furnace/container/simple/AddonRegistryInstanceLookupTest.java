@@ -28,8 +28,7 @@ public class AddonRegistryInstanceLookupTest
    })
    public static ForgeArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap
-               .create(ForgeArchive.class)
+      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addAsServiceProvider(Service.class, AddonRegistryInstanceLookupTest.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),

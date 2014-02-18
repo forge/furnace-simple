@@ -16,7 +16,7 @@ import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.container.simple.EventListener;
 import org.jboss.forge.furnace.container.simple.Service;
 import org.jboss.forge.furnace.container.simple.events.SimpleEventManagerImpl;
-import org.jboss.forge.furnace.container.simple.impl.SimpleServiceRegistryImpl;
+import org.jboss.forge.furnace.container.simple.impl.SimpleServiceRegistry;
 import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.event.PostStartup;
 import org.jboss.forge.furnace.event.PreShutdown;
@@ -104,7 +104,7 @@ public class SimpleContainer implements AddonLifecycleProvider
          }
 
       }
-      return new SimpleServiceRegistryImpl(furnace, addon, serviceTypes);
+      return new SimpleServiceRegistry(furnace, addon, serviceTypes);
    }
 
    private String getClassLoadingErrorMessage(Addon addon, String serviceType)
