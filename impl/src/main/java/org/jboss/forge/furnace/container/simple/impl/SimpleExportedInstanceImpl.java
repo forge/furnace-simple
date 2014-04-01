@@ -6,13 +6,9 @@
  */
 package org.jboss.forge.furnace.container.simple.impl;
 
-import java.lang.reflect.Constructor;
-
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;
-import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
-import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 
 /**
@@ -21,13 +17,12 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
  */
 public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
 {
-   private final Furnace furnace;
    private final Addon addon;
    private final Class<T> type;
 
    public SimpleExportedInstanceImpl(Furnace furnace, Addon addon, Class<T> clazz)
    {
-      this.furnace = furnace;
+      // TODO remove unused parameter
       this.addon = addon;
       this.type = clazz;
    }
@@ -38,22 +33,13 @@ public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
       T delegate = null;
       try
       {
-         try
-         {
-            Constructor<T> constructor = type.getConstructor(Furnace.class);
-            delegate = constructor.newInstance(furnace);
-         }
-         catch (NoSuchMethodException e)
-         {
-            delegate = type.newInstance();
-         }
+         delegate = type.newInstance();
       }
       catch (Exception e)
       {
          throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.", e);
       }
-      return Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(addon.getClassLoader(),
-               delegate));
+      return delegate;
    }
 
    @Override
