@@ -65,7 +65,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
       Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz.getName());
 
-      if (result == null)
+      if (result == null || result.isEmpty())
       {
          result = new HashSet<>();
          for (Class<?> type : serviceTypes)
