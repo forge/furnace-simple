@@ -75,7 +75,10 @@ public class SimpleServiceRegistry implements ServiceRegistry
                result.add(new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type));
             }
          }
-
+         if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz) && isExtensionPointType(clazz))
+         {
+            result.add(new SimpleExportedInstanceImpl<>(furnace, addon, clazz));
+         }
          instancesCache.put(clazz.getName(), (Set) result);
       }
       return result;
