@@ -9,6 +9,8 @@ package org.jboss.forge.furnace.container.simple.impl;
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;
+import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
+import org.jboss.forge.furnace.proxy.Proxies;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 
 /**
@@ -34,6 +36,8 @@ public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
       try
       {
          delegate = type.newInstance();
+         delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(addon.getClassLoader(),
+                  delegate));
       }
       catch (Exception e)
       {
