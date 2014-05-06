@@ -68,7 +68,7 @@ TIP: Services registered in this way must exist in the same JAR file as the regi
 
 
 Provides simple event listening mechanism::
- To register an {@link EventListener}, a file must be created with the name `META-INF/services/org.jboss.forge.furnace.container.simple.EventListener`, and each `EventListener` implementation type name must be added on a separate line:
+ To register an `EventListener`, a file must be created with the name `META-INF/services/org.jboss.forge.furnace.container.simple.EventListener`, and each `EventListener` implementation type name must be added on a separate line:
 +
 [source,java]
 ----
