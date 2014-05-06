@@ -64,5 +64,31 @@ org.example.ExampleService2
 org.my.custom.MyService
 ......
 ----
-+
 TIP: Services registered in this way must exist in the same JAR file as the registry file.
+
+
+Provides simple event listening mechanism::
+ To register an {@link EventListener}, a file must be created with the name `META-INF/services/org.jboss.forge.furnace.container.simple.EventListener`, and each `EventListener` implementation type name must be added on a separate line:
++
+[source,java]
+----
+public class ExampleEventListener implements EventListener
+{
+   public void handleEvent(Object event, Annotation... qualifiers)
+   {
+      System.out.println("Handled event: " + event)
+   }
+}
+----
++
+Example registration file:
+[source,text]
+----
+META-INF/services/org.jboss.forge.furnace.container.simple.EventListener
+......
+org.example.ExampleEventListener
+org.example.ExampleEventListener2
+org.my.custom.MyEventListener
+......
+----
+TIP: Listeners registered in this way must exist in the same JAR file as the registry file.
