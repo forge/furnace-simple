@@ -3,10 +3,7 @@ package org.jboss.forge.furnace.container.simple.lifecycle;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,24 +29,13 @@ import org.jboss.forge.furnace.util.Streams;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class SimpleContainer implements AddonLifecycleProvider
+public class SimpleContainerImpl implements AddonLifecycleProvider
 {
-   private static final Logger log = Logger.getLogger(SimpleContainer.class.getName());
+   private static final Logger log = Logger.getLogger(SimpleContainerImpl.class.getName());
 
    private static final String SERVICE_REGISTRATION_FILE_NAME = Service.class.getName();
 
-   private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<>(
-            new WeakHashMap<ClassLoader, Furnace>());
-
    private Furnace furnace;
-
-   /**
-    * Used to retrieve an instance of {@link Furnace}.
-    */
-   public static Furnace getFurnace(ClassLoader loader)
-   {
-      return started.get(loader);
-   }
 
    @Override
    public void initialize(Furnace furnace, AddonRegistry registry, Addon self) throws Exception
@@ -60,13 +46,13 @@ public class SimpleContainer implements AddonLifecycleProvider
    @Override
    public void start(Addon addon) throws Exception
    {
-      started.put(addon.getClassLoader(), furnace);
+      SimpleContainer.start(addon, furnace);
    }
 
    @Override
    public void stop(Addon addon) throws Exception
    {
-      started.remove(addon.getClassLoader());
+      SimpleContainer.stop(addon);
    }
 
    @Override
