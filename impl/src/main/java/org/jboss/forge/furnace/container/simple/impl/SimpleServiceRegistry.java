@@ -35,12 +35,15 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
    private final Map<String, ExportedInstance<?>> instanceCache = new WeakHashMap<>();
    private final Map<String, Set<ExportedInstance<?>>> instancesCache = new WeakHashMap<>();
+   private final Set<Class<?>> singletonServiceTypes;
 
-   public SimpleServiceRegistry(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes)
+   public SimpleServiceRegistry(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes,
+            Set<Class<?>> singletonServiceTypes)
    {
       this.furnace = furnace;
       this.addon = addon;
       this.serviceTypes = serviceTypes;
+      this.singletonServiceTypes = singletonServiceTypes;
    }
 
    @Override
@@ -68,6 +71,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
       if (result == null || result.isEmpty())
       {
          result = new HashSet<>();
+
          for (Class<?> type : serviceTypes)
          {
             if (clazz.isAssignableFrom(type))
@@ -75,10 +79,20 @@ public class SimpleServiceRegistry implements ServiceRegistry
                result.add(new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type));
             }
          }
+
+         for (Class<?> type : singletonServiceTypes)
+         {
+            if (clazz.isAssignableFrom(type))
+            {
+               result.add(new SimpleSingletonExportedInstanceImpl(furnace, addon, (Class<T>) type));
+            }
+         }
+
          if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz) && isExtensionPointType(clazz))
          {
             result.add(new SimpleExportedInstanceImpl<>(furnace, addon, clazz));
          }
+
          instancesCache.put(clazz.getName(), (Set) result);
       }
       return result;
@@ -90,7 +104,8 @@ public class SimpleServiceRegistry implements ServiceRegistry
    {
       try
       {
-         return getExportedInstance((Class<T>) Class.forName(clazz, false, addon.getClassLoader()));
+         Class<?> type = Class.forName(clazz, false, addon.getClassLoader());
+         return getExportedInstance((Class<T>) type);
       }
       catch (ClassNotFoundException e)
       {
@@ -119,7 +134,15 @@ public class SimpleServiceRegistry implements ServiceRegistry
                   {
                      if (clazz.isAssignableFrom(type))
                      {
-                        return new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type);
+                        return new SimpleExportedInstanceImpl<T>(furnace, addon, (Class<T>) type);
+                     }
+                  }
+
+                  for (Class<?> type : singletonServiceTypes)
+                  {
+                     if (clazz.isAssignableFrom(type))
+                     {
+                        return new SimpleSingletonExportedInstanceImpl<T>(furnace, addon, (Class<T>) type);
                      }
                   }
 
@@ -154,14 +177,17 @@ public class SimpleServiceRegistry implements ServiceRegistry
    @Override
    public Set<Class<?>> getExportedTypes()
    {
-      return Collections.unmodifiableSet(serviceTypes);
+      final Set<Class<?>> result = new HashSet<>();
+      result.addAll(serviceTypes);
+      result.addAll(singletonServiceTypes);
+      return Collections.unmodifiableSet(result);
    }
 
    @Override
    public <T> Set<Class<T>> getExportedTypes(Class<T> type)
    {
       Set<Class<T>> result = new HashSet<>();
-      for (Class<?> serviceType : serviceTypes)
+      for (Class<?> serviceType : getExportedTypes())
       {
          if (type.isAssignableFrom(serviceType))
          {
@@ -175,7 +201,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
    public boolean hasService(Class<?> clazz)
    {
       Addons.waitUntilStarted(addon);
-      for (Class<?> service : serviceTypes)
+      for (Class<?> service : getExportedTypes())
       {
          if (clazz.isAssignableFrom(service))
          {
