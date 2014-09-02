@@ -35,7 +35,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
 /**
  * Implements a fast and simple {@link AddonLifecycleProvider} for the {@link Furnace} runtime. Allows {@link Service}
  * and {@link EventListener} registration.
- * 
+ *
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class SimpleContainerImpl implements AddonLifecycleProvider
@@ -80,35 +80,36 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
    {
       URL resource = addon.getClassLoader().getResource("/META-INF/services/" + serviceType.getName());
       Set<Class<?>> serviceTypes = new HashSet<>();
-      if (resource != null)
+
+      if (resource == null)
       {
-         try (InputStream stream = resource.openStream();
-                  BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
+         return serviceTypes;
+      }
+
+      try (InputStream stream = resource.openStream();
+           BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
+      {
+         String serviceName;
+         while ((serviceName = reader.readLine()) != null)
          {
-            String serviceName;
-            while ((serviceName = reader.readLine()) != null)
+            if (!ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
             {
-               if (ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
-               {
-                  Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
-                  if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
-                  {
-                     serviceTypes.add(type);
-                  }
-               }
-               else
-               {
-                  log.log(Level.WARNING,
-                           "Service class not enabled due to underlying classloading error. If this is unexpected, "
-                                    + "enable DEBUG logging to see the full stack trace: "
-                                    + getClassLoadingErrorMessage(addon, serviceName));
-                  log.log(Level.FINE,
-                           "Service class not enabled due to underlying classloading error.",
-                           ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceName));
-               }
+               log.log(Level.WARNING,
+                        "Service class not enabled due to underlying classloading error. If this is unexpected, "
+                                 + "enable DEBUG logging to see the full stack trace: "
+                                 + getClassLoadingErrorMessage(addon, serviceName));
+               log.log(Level.FINE,
+                        "Service class not enabled due to underlying classloading error.",
+                        ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceName));
+               continue;
+            }
+
+            Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
+            if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+            {
+               serviceTypes.add(type);
             }
          }
-
       }
       return serviceTypes;
    }
