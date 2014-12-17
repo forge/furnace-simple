@@ -7,7 +7,8 @@
 package org.jboss.forge.furnace.container.simple;
 
 /**
- * Reference interface. Service types are not required to extend this class, but may do so for reference purposes.
+ * Reference interface. Users are discouraged to implement this interface in their services, as it may not compile on
+ * JDK 1.8.0_20+ due to javac changes (https://issues.jboss.org/browse/FORGE-2019).
  * 
  * <p>
  * To register a type as a service, a file must be created with the name
@@ -35,7 +36,13 @@ package org.jboss.forge.furnace.container.simple;
  * </pre>
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
+ * 
+ * @deprecated from JDK 1.8.0_20 onwards, javac changed its behavior in order to check for transitive references.
+ *             Implementing this interface is discouraged. See <a href="https://issues.jboss.org/browse/FORGE-2019">this
+ *             link</a> for more information
+ *             
  */
+@Deprecated
 public interface Service
 {
 

@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryMultipleAddonsTest implements Service
+public class AddonRegistryMultipleAddonsTest
 {
 
    @Deployment
@@ -45,6 +45,7 @@ public class AddonRegistryMultipleAddonsTest implements Service
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
+               .addAsServiceProvider(Service.class, AddonRegistryMultipleAddonsTest.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
                         AddonDependencyEntry.create("test:dep2"),

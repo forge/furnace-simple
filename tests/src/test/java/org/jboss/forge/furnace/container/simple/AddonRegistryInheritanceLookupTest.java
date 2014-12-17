@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="ggastald@redhat.com">George Gastaldi</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryInheritanceLookupTest implements Service
+public class AddonRegistryInheritanceLookupTest
 {
 
    @Deployment
@@ -45,6 +45,7 @@ public class AddonRegistryInheritanceLookupTest implements Service
    {
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addBeansXML()
+               .addAsServiceProvider(Service.class, AddonRegistryInheritanceLookupTest.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
                         AddonDependencyEntry.create("test:dep2"),

@@ -34,7 +34,7 @@ import org.junit.runner.RunWith;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 @RunWith(Arquillian.class)
-public class AddonRegistryIncompatibleServiceLookupTest implements Service
+public class AddonRegistryIncompatibleServiceLookupTest
 {
 
    @Deployment
@@ -46,6 +46,7 @@ public class AddonRegistryIncompatibleServiceLookupTest implements Service
       ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
                .addClass(Aa.class)
                .addBeansXML()
+               .addAsServiceProvider(Service.class, AddonRegistryIncompatibleServiceLookupTest.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
                         AddonDependencyEntry.create("test:dep2"),
