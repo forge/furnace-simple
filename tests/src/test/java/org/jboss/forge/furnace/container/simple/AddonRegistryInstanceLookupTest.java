@@ -10,9 +10,9 @@ import java.util.Iterator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependency;
-import org.jboss.forge.arquillian.Dependencies;
-import org.jboss.forge.arquillian.archive.ForgeArchive;
+import org.jboss.forge.arquillian.AddonDeployment;
+import org.jboss.forge.arquillian.AddonDeployments;
+import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
@@ -29,12 +29,12 @@ import org.junit.runner.RunWith;
 public class AddonRegistryInstanceLookupTest
 {
    @Deployment(order = 2)
-   @Dependencies({
-            @AddonDependency(name = "org.jboss.forge.furnace.container:simple")
+   @AddonDeployments({
+            @AddonDeployment(name = "org.jboss.forge.furnace.container:simple")
    })
-   public static ForgeArchive getDeployment()
+   public static AddonArchive getDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addAsServiceProvider(Service.class, AddonRegistryInstanceLookupTest.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
@@ -45,9 +45,9 @@ public class AddonRegistryInstanceLookupTest
    }
 
    @Deployment(name = "dependency,1", testable = false, order = 1)
-   public static ForgeArchive getDependencyDeployment()
+   public static AddonArchive getDependencyDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(PublishedService.class)
                .addAsLocalServices(PublishedService.class);
 
@@ -55,9 +55,9 @@ public class AddonRegistryInstanceLookupTest
    }
 
    @Deployment(name = "other,1", testable = false, order = 0)
-   public static ForgeArchive getContainerDeployment()
+   public static AddonArchive getContainerDeployment()
    {
-      ForgeArchive archive = ShrinkWrap.create(ForgeArchive.class)
+      AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
                .addClasses(PublishedService.class)
                .addAsLocalServices(PublishedService.class);
 
