@@ -45,7 +45,7 @@ public class AddonRegistryEventTest
       Furnace furnace = SimpleContainer.getFurnace(this.getClass().getClassLoader());
       Assert.assertNotNull("Furnace is not started", furnace);
       AddonRegistry addonRegistry = furnace.getAddonRegistry();
-      addonRegistry.fireEvent("Foo");
+      addonRegistry.getEventManager().fireEvent("Foo");
       Assert.assertTrue("Event was not received", FooEventListener.eventFired);
    }
 
