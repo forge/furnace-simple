@@ -11,8 +11,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependencies;
-import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -38,8 +36,7 @@ public class SingletonServiceTest
                .addAsServiceProvider(SingletonService.class, SimpleSingletonInstance.class)
                .addAsServiceProvider(Service.class, SingletonServiceTest.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
-               );
+                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"));
 
       return archive;
    }
@@ -47,10 +44,8 @@ public class SingletonServiceTest
    @Test
    public void testContainerStartup()
    {
-      Imported<SimpleSingletonInstance> services = SimpleContainer.getFurnace(this.getClass().getClassLoader())
-               .getAddonRegistry().getServices(SimpleSingletonInstance.class);
-      Imported<SimpleSingletonInstance> services2 = SimpleContainer.getFurnace(this.getClass().getClassLoader())
-               .getAddonRegistry().getServices(SimpleSingletonInstance.class);
+      Imported<SimpleSingletonInstance> services = SimpleContainer.getServices(SimpleSingletonInstance.class);
+      Imported<SimpleSingletonInstance> services2 = SimpleContainer.getServices(SimpleSingletonInstance.class);
       assertNotNull(services.get());
       assertEquals(services.get().getRandomInteger(), services2.get().getRandomInteger());
    }
