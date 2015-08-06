@@ -36,7 +36,7 @@ public class SimpleContainer
    }
 
    /**
-    * Returns the {@link Addon} for which the given ClassLoader represents.
+    * Returns the {@link Addon} for which the given ClassLoader was produced.
     * 
     * @param loader the {@link ClassLoader} this {@link Furnace} runtime can be found
     * @return the {@link Addon} for which the given ClassLoader represents
