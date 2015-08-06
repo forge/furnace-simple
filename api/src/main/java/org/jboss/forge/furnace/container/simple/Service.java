@@ -40,7 +40,7 @@ package org.jboss.forge.furnace.container.simple;
  * @deprecated from JDK 1.8.0_20 onwards, javac changed its behavior in order to check for transitive references.
  *             Implementing this interface is discouraged. See <a href="https://issues.jboss.org/browse/FORGE-2019">this
  *             link</a> for more information
- *             
+ * 
  */
 @Deprecated
 public interface Service

@@ -84,7 +84,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
          {
             if (clazz.isAssignableFrom(type))
             {
-               result.add(new SimpleSingletonExportedInstanceImpl(furnace, addon, (Class<T>) type));
+               result.add(new SimpleSingletonExportedInstanceImpl(furnace, addon, type));
             }
          }
 

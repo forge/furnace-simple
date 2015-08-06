@@ -42,7 +42,8 @@ public class SimpleSingletonExportedInstanceImpl<T> implements ExportedInstance<
          }
          catch (Exception e)
          {
-            throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.", e);
+            throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.",
+                     e);
          }
       }
       return delegate;

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -38,6 +39,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
+@SuppressWarnings("deprecation")
 public class SimpleContainerImpl implements AddonLifecycleProvider
 {
    private static final Logger log = Logger.getLogger(SimpleContainerImpl.class.getName());
@@ -76,12 +78,13 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
       return new SimpleServiceRegistry(furnace, addon, serviceTypes, singletonServiceTypes);
    }
 
-   private Set<Class<?>> locateServices(Addon addon, Class<?> serviceType) throws IOException
+   private static Set<Class<?>> locateServices(Addon addon, Class<?> serviceType) throws IOException
    {
-      URL resource = addon.getClassLoader().getResource("/META-INF/services/" + serviceType.getName());
+      Enumeration<URL> resources = addon.getClassLoader().getResources("/META-INF/services/" + serviceType.getName());
       Set<Class<?>> serviceTypes = new HashSet<>();
-      if (resource != null)
+      while (resources.hasMoreElements())
       {
+         URL resource = resources.nextElement();
          try (InputStream stream = resource.openStream();
                   BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
          {
@@ -108,12 +111,12 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
                }
             }
          }
-
       }
+
       return serviceTypes;
    }
 
-   private String getClassLoadingErrorMessage(Addon addon, String serviceType)
+   private static String getClassLoadingErrorMessage(Addon addon, String serviceType)
    {
       Throwable e = ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceType);
       while (e.getCause() != null && e.getCause() != e)
