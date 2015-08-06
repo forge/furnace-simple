@@ -12,6 +12,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,10 +27,18 @@ import org.junit.runner.RunWith;
 public class AddonArchiveDefaultSmokeTest
 {
    @Test
-   public void test()
+   public void testFurnace()
    {
       Furnace furnace = SimpleContainer.getFurnace(getClass().getClassLoader());
       Assert.assertThat(furnace, notNullValue());
+   }
+
+   @Test
+   public void testAddon()
+   {
+      Addon addon = SimpleContainer.getAddon(getClass().getClassLoader());
+      Assert.assertThat(addon, notNullValue());
+      Assert.assertEquals("_DEFAULT_", addon.getId().getName());
    }
 
 }

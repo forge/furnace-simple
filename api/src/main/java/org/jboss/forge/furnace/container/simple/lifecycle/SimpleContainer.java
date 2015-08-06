@@ -25,15 +25,33 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class SimpleContainer
 {
-   private static Map<ClassLoader, Furnace> started = new ConcurrentHashMap<>();
+   private static Map<Addon, Furnace> started = new ConcurrentHashMap<>();
 
    /**
     * Used to retrieve an instance of {@link Furnace}.
     */
    public static Furnace getFurnace(ClassLoader loader)
    {
+      return started.get(getAddon(loader));
+   }
+
+   /**
+    * Returns the {@link Addon} for which the given ClassLoader represents.
+    * 
+    * @param loader the {@link ClassLoader} this {@link Furnace} runtime can be found
+    * @return the {@link Addon} for which the given ClassLoader represents
+    */
+   public static Addon getAddon(ClassLoader loader)
+   {
       Assert.notNull(loader, "ClassLoader must not be null");
-      return started.get(loader);
+      for (Addon addon : started.keySet())
+      {
+         if (addon.getClassLoader() == loader)
+         {
+            return addon;
+         }
+      }
+      return null;
    }
 
    /**
@@ -57,12 +75,12 @@ public class SimpleContainer
 
    static void start(Addon addon, Furnace furnace)
    {
-      started.put(addon.getClassLoader(), furnace);
+      started.put(addon, furnace);
    }
 
    static void stop(Addon addon)
    {
-      started.remove(addon.getClassLoader());
+      started.remove(addon);
    }
 
 }
