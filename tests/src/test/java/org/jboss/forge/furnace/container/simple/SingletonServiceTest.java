@@ -44,8 +44,10 @@ public class SingletonServiceTest
    @Test
    public void testContainerStartup()
    {
-      Imported<SimpleSingletonInstance> services = SimpleContainer.getServices(SimpleSingletonInstance.class);
-      Imported<SimpleSingletonInstance> services2 = SimpleContainer.getServices(SimpleSingletonInstance.class);
+      Imported<SimpleSingletonInstance> services = SimpleContainer.getServices(getClass().getClassLoader(),
+               SimpleSingletonInstance.class);
+      Imported<SimpleSingletonInstance> services2 = SimpleContainer.getServices(getClass().getClassLoader(),
+               SimpleSingletonInstance.class);
       assertNotNull(services.get());
       assertEquals(services.get().getRandomInteger(), services2.get().getRandomInteger());
    }

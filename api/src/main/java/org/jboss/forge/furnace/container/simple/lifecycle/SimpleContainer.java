@@ -15,6 +15,7 @@ import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.container.simple.EventListener;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.services.Imported;
+import org.jboss.forge.furnace.util.Assert;
 
 /**
  * Implements a fast and simple {@link AddonLifecycleProvider} for the {@link Furnace} runtime. Allows Service and
@@ -31,18 +32,8 @@ public class SimpleContainer
     */
    public static Furnace getFurnace(ClassLoader loader)
    {
+      Assert.notNull(loader, "ClassLoader must not be null");
       return started.get(loader);
-   }
-
-   /**
-    * Returns the registered services for a given {@link Furnace} Runtime.
-    * 
-    * @param service the service {@link Class}
-    * @return an {@link Imported} instance
-    */
-   public static <T> Imported<T> getServices(Class<T> service)
-   {
-      return getServices(service.getClassLoader(), service);
    }
 
    /**
@@ -50,7 +41,8 @@ public class SimpleContainer
     * 
     * @param classloader the {@link ClassLoader} this {@link Furnace} runtime can be found
     * @param service the service {@link Class}
-    * @return an {@link Imported} instance
+    * @return an {@link Imported} instance, <code>null</code> if no {@link Furnace} container can be found in the given
+    *         {@link ClassLoader}
     */
    public static <T> Imported<T> getServices(ClassLoader classloader, Class<T> service)
    {
