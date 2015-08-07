@@ -25,14 +25,16 @@ import org.jboss.forge.furnace.util.Assert;
  */
 public class SimpleContainer
 {
-   private static Map<Addon, Furnace> started = new ConcurrentHashMap<>();
+   private static Map<ClassLoader, ContainerEntry> started = new ConcurrentHashMap<>();
 
    /**
     * Used to retrieve an instance of {@link Furnace}.
     */
    public static Furnace getFurnace(ClassLoader loader)
    {
-      return started.get(getAddon(loader));
+      Assert.notNull(loader, "ClassLoader must not be null");
+      ContainerEntry containerEntry = started.get(loader);
+      return containerEntry != null ? containerEntry.furnace : null;
    }
 
    /**
@@ -44,14 +46,8 @@ public class SimpleContainer
    public static Addon getAddon(ClassLoader loader)
    {
       Assert.notNull(loader, "ClassLoader must not be null");
-      for (Addon addon : started.keySet())
-      {
-         if (addon.getClassLoader() == loader)
-         {
-            return addon;
-         }
-      }
-      return null;
+      ContainerEntry containerEntry = started.get(loader);
+      return containerEntry != null ? containerEntry.addon : null;
    }
 
    /**
@@ -75,12 +71,26 @@ public class SimpleContainer
 
    static void start(Addon addon, Furnace furnace)
    {
-      started.put(addon, furnace);
+      started.put(addon.getClassLoader(), new ContainerEntry(furnace, addon));
    }
 
    static void stop(Addon addon)
    {
-      started.remove(addon);
+      started.remove(addon.getClassLoader());
+   }
+
+   private static class ContainerEntry
+   {
+      final Furnace furnace;
+      final Addon addon;
+
+      public ContainerEntry(Furnace furnace, Addon addon)
+      {
+         super();
+         this.furnace = furnace;
+         this.addon = addon;
+      }
+
    }
 
 }
