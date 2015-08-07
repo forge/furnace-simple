@@ -37,12 +37,11 @@ package org.jboss.forge.furnace.container.simple;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
- * @deprecated from JDK 1.8.0_20 onwards, javac changed its behavior in order to check for transitive references.
- *             Implementing this interface is discouraged. See <a href="https://issues.jboss.org/browse/FORGE-2019">this
- *             link</a> for more information
+ *         <h2>Warning: from JDK 1.8.0_20 onwards, javac changed its behavior in order to check for transitive
+ *         references. Implementing this interface is discouraged. See
+ *         <a href="https://issues.jboss.org/browse/FORGE-2019">this link</a> for more information</h2>
  * 
  */
-@Deprecated
 public interface Service
 {
 

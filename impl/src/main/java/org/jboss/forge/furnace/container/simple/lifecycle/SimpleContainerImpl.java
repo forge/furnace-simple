@@ -39,7 +39,6 @@ import org.jboss.forge.furnace.util.ClassLoaders;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-@SuppressWarnings("deprecation")
 public class SimpleContainerImpl implements AddonLifecycleProvider
 {
    private static final Logger log = Logger.getLogger(SimpleContainerImpl.class.getName());

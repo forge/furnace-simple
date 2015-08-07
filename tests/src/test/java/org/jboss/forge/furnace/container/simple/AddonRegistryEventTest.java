@@ -30,7 +30,6 @@ public class AddonRegistryEventTest
 {
    @Deployment
    @AddonDependencies
-   @SuppressWarnings("deprecation")
    public static AddonArchive getDeployment()
    {
       AddonArchive archive = ShrinkWrap.create(AddonArchive.class)
