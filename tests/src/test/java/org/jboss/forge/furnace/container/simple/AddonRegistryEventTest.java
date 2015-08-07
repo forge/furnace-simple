@@ -8,6 +8,8 @@
 package org.jboss.forge.furnace.container.simple;
 
 import java.lang.annotation.Annotation;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -55,6 +57,7 @@ public class AddonRegistryEventTest
       @Override
       public void handleEvent(Object event, Annotation... qualifiers)
       {
+         Logger.getGlobal().log(Level.FINE, "##########EVENT: %s %s %n", new Object[] { event.getClass(), event });
          eventFired = "Foo".equals(event);
       }
    }

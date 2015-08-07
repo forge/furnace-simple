@@ -44,6 +44,7 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
    private static final Logger log = Logger.getLogger(SimpleContainerImpl.class.getName());
 
    private Furnace furnace;
+   private EventManager eventManager;
 
    @Override
    public void initialize(Furnace furnace, AddonRegistry registry, Addon self) throws Exception
@@ -55,6 +56,7 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
    public void start(Addon addon) throws Exception
    {
       SimpleContainer.start(addon, furnace);
+      this.eventManager = new SimpleEventManagerImpl(addon);
    }
 
    @Override
@@ -66,7 +68,7 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
    @Override
    public EventManager getEventManager(Addon addon)
    {
-      return new SimpleEventManagerImpl(addon);
+      return eventManager;
    }
 
    @Override
@@ -128,13 +130,13 @@ public class SimpleContainerImpl implements AddonLifecycleProvider
    @Override
    public void postStartup(Addon addon) throws Exception
    {
-      getEventManager(addon).fireEvent(new PostStartup(addon));
+      eventManager.fireEvent(new PostStartup(addon));
    }
 
    @Override
    public void preShutdown(Addon addon) throws Exception
    {
-      getEventManager(addon).fireEvent(new PreShutdown(addon));
+      eventManager.fireEvent(new PreShutdown(addon));
    }
 
    @Override
