@@ -15,22 +15,26 @@ import org.jboss.forge.furnace.event.EventException;
 import org.jboss.forge.furnace.event.EventManager;
 
 /**
+ * {@link EventManager} implementation for Simple container
+ * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
 public class SimpleEventManagerImpl implements EventManager
 {
+   private final Addon addon;
+
    public SimpleEventManagerImpl(Addon addon)
    {
+      this.addon = addon;
    }
 
    @Override
    public void fireEvent(Object event, Annotation... qualifiers) throws EventException
    {
-      Iterable<EventListener> listeners = ServiceLoader.load(EventListener.class);
+      Iterable<EventListener> listeners = ServiceLoader.load(EventListener.class, addon.getClassLoader());
       for (EventListener listener : listeners)
       {
          listener.handleEvent(event, qualifiers);
       }
    }
-
 }
