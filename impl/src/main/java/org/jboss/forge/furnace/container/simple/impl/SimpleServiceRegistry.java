@@ -16,8 +16,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -26,7 +25,6 @@ import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.EventListener;
 import org.jboss.forge.furnace.container.simple.Service;
 import org.jboss.forge.furnace.container.simple.SingletonService;
-import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
 import org.jboss.forge.furnace.util.Assert;
@@ -39,17 +37,14 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
 {
    private static final Logger log = Logger.getLogger(SimpleServiceRegistry.class.getName());
 
-   private final Furnace furnace;
    private final Addon addon;
    private final Set<Class<?>> serviceTypes;
    private final Set<Class<?>> singletonServiceTypes;
 
-   private final Map<String, ExportedInstance<?>> instanceCache = new WeakHashMap<>();
-   private final Map<String, Set<ExportedInstance<?>>> instancesCache = new WeakHashMap<>();
+   private final Map<String, ExportedInstance<?>> instancesCache = new ConcurrentHashMap<>();
 
    public SimpleServiceRegistry(Furnace furnace, Addon addon)
    {
-      this.furnace = furnace;
       this.addon = addon;
       Set<Class<?>> allServices = new HashSet<>();
       allServices.addAll(locateServices(addon, Service.class));
@@ -57,6 +52,14 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
       allServices.addAll(locateServices(addon, EventListener.class));
       this.serviceTypes = allServices;
       this.singletonServiceTypes = locateServices(addon, SingletonService.class);
+      for (Class<?> type : serviceTypes)
+      {
+         instancesCache.put(type.getName(), new SimpleExportedInstanceImpl<>(furnace, addon, type));
+      }
+      for (Class<?> type : singletonServiceTypes)
+      {
+         instancesCache.put(type.getName(), new SimpleSingletonExportedInstanceImpl<>(furnace, addon, type));
+      }
    }
 
    @Override
@@ -77,28 +80,21 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
    @SuppressWarnings({ "unchecked", "rawtypes" })
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
    {
-      Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz.getName());
-
-      if (result == null || result.isEmpty())
+      Set<ExportedInstance<T>> result = new HashSet<>();
+      for (Class<?> type : singletonServiceTypes)
       {
-         result = new HashSet<>();
-
-         for (Class<?> type : serviceTypes)
+         if (clazz.isAssignableFrom(type))
          {
-            if (clazz.isAssignableFrom(type))
-            {
-               result.add(new SimpleExportedInstanceImpl<>(furnace, addon, (Class<T>) type));
-            }
+            result.add((ExportedInstance<T>) instancesCache.get(type.getName()));
          }
+      }
 
-         for (Class<?> type : singletonServiceTypes)
+      for (Class<?> type : serviceTypes)
+      {
+         if (clazz.isAssignableFrom(type))
          {
-            if (clazz.isAssignableFrom(type))
-            {
-               result.add(new SimpleSingletonExportedInstanceImpl(furnace, addon, type));
-            }
+            result.add((ExportedInstance<T>) instancesCache.get(type.getName()));
          }
-         instancesCache.put(clazz.getName(), (Set) result);
       }
       return result;
    }
@@ -124,48 +120,23 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
    {
       Assert.notNull(clazz, "Requested Class type may not be null");
 
-      ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(clazz.getName());
-      if (result == null)
+      for (Class<?> type : singletonServiceTypes)
       {
-         try
+         if (clazz.isAssignableFrom(type))
          {
-            result = ClassLoaders.executeIn(addon.getClassLoader(), new Callable<ExportedInstance<T>>()
-            {
-               @Override
-               public ExportedInstance<T> call() throws Exception
-               {
-                  for (Class<?> type : serviceTypes)
-                  {
-                     if (clazz.isAssignableFrom(type))
-                     {
-                        return new SimpleExportedInstanceImpl<T>(furnace, addon, (Class<T>) type);
-                     }
-                  }
-
-                  for (Class<?> type : singletonServiceTypes)
-                  {
-                     if (clazz.isAssignableFrom(type))
-                     {
-                        return new SimpleSingletonExportedInstanceImpl<T>(furnace, addon, (Class<T>) type);
-                     }
-                  }
-
-                  return null;
-               }
-            });
-
-            if (result != null)
-               instanceCache.put(clazz.getName(), result);
+            return (ExportedInstance<T>) instancesCache.get(type.getName());
          }
-         catch (Exception e)
-         {
-            throw new ContainerException("Could not get service of type [" + clazz + "] from addon ["
-                     + addon
-                     + "]", e);
-         }
-
       }
-      return result;
+
+      for (Class<?> type : serviceTypes)
+      {
+         if (clazz.isAssignableFrom(type))
+         {
+            return (ExportedInstance<T>) instancesCache.get(type.getName());
+         }
+      }
+
+      return null;
    }
 
    @Override
@@ -221,15 +192,15 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
    public void close()
    {
       this.serviceTypes.clear();
-      this.instanceCache.clear();
-      this.instancesCache.clear();
       this.singletonServiceTypes.clear();
+      this.instancesCache.clear();
    }
 
    @Override
    public String toString()
    {
-      return serviceTypes.toString();
+      return "SimpleServiceRegistry [serviceTypes=" + serviceTypes + ", singletonServiceTypes=" + singletonServiceTypes
+               + "]";
    }
 
    private static Set<Class<?>> locateServices(Addon addon, Class<?> serviceType)
