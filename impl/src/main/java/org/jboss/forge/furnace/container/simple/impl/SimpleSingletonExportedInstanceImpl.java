@@ -73,4 +73,41 @@ public class SimpleSingletonExportedInstanceImpl<T> implements ExportedInstance<
    {
       return addon;
    }
+
+   @Override
+   public int hashCode()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((addon == null) ? 0 : addon.hashCode());
+      result = prime * result + ((type == null) ? 0 : type.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      SimpleSingletonExportedInstanceImpl other = (SimpleSingletonExportedInstanceImpl) obj;
+      if (addon == null)
+      {
+         if (other.addon != null)
+            return false;
+      }
+      else if (!addon.equals(other.addon))
+         return false;
+      if (type == null)
+      {
+         if (other.type != null)
+            return false;
+      }
+      else if (!type.equals(other.type))
+         return false;
+      return true;
+   }
 }
