@@ -7,12 +7,13 @@
 package org.jboss.forge.furnace.container.simple.events;
 
 import java.lang.annotation.Annotation;
-import java.util.ServiceLoader;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.EventListener;
+import org.jboss.forge.furnace.container.simple.impl.SimpleServiceRegistry;
 import org.jboss.forge.furnace.event.EventException;
 import org.jboss.forge.furnace.event.EventManager;
+import org.jboss.forge.furnace.spi.ExportedInstance;
 
 /**
  * {@link EventManager} implementation for Simple container
@@ -21,19 +22,29 @@ import org.jboss.forge.furnace.event.EventManager;
  */
 public class SimpleEventManagerImpl implements EventManager
 {
-   private final Iterable<EventListener> listeners;
+   private final SimpleServiceRegistry serviceRegistry;
 
-   public SimpleEventManagerImpl(Addon addon)
+   public SimpleEventManagerImpl(Addon addon, SimpleServiceRegistry serviceRegistry)
    {
-      this.listeners = ServiceLoader.load(EventListener.class, addon.getClassLoader());
+      this.serviceRegistry = serviceRegistry;
    }
 
    @Override
    public void fireEvent(Object event, Annotation... qualifiers) throws EventException
    {
-      for (EventListener listener : listeners)
+      for (ExportedInstance<EventListener> instance : serviceRegistry.getExportedInstances(EventListener.class))
       {
-         listener.handleEvent(event, qualifiers);
+         EventListener listener = null;
+         try
+         {
+            listener = instance.get();
+            listener.handleEvent(event, qualifiers);
+         }
+         finally
+         {
+            // Do not release, otherwise singleton instances will be GC'ed
+            // instance.release(listener);
+         }
       }
    }
 }

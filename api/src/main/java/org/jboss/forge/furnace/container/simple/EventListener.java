@@ -9,10 +9,12 @@ package org.jboss.forge.furnace.container.simple;
 import java.lang.annotation.Annotation;
 
 /**
+ * Event Listeners can be registered as services.
+ * 
  * <p>
- * To register an {@link EventListener}, a file must be created with the name
- * <code>META-INF/services/org.jboss.forge.furnace.container.simple.EventListener</code>, and each {@link EventListener}
- * implementation type name must be added on a separate line:
+ * To register an {@link EventListener}, register it as {@link Service} or {@link SingletonService}. You can also create
+ * a file with the name <code>META-INF/services/org.jboss.forge.furnace.container.simple.EventListener</code>, and each
+ * {@link EventListener} implementation type name must be added on a separate line:
  * <p>
  * 
  * <pre>
@@ -35,7 +37,8 @@ import java.lang.annotation.Annotation;
  * </pre>
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
- * 
+ * @see Service
+ * @see SingletonService
  */
 public interface EventListener
 {

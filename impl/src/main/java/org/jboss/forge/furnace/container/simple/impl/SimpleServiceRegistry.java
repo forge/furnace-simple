@@ -6,44 +6,57 @@
  */
 package org.jboss.forge.furnace.container.simple.impl;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.EventListener;
 import org.jboss.forge.furnace.container.simple.Service;
+import org.jboss.forge.furnace.container.simple.SingletonService;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.spi.ExportedInstance;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
-import org.jboss.forge.furnace.util.Addons;
 import org.jboss.forge.furnace.util.Assert;
 import org.jboss.forge.furnace.util.ClassLoaders;
 
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class SimpleServiceRegistry implements ServiceRegistry
+public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
 {
+   private static final Logger log = Logger.getLogger(SimpleServiceRegistry.class.getName());
+
    private final Furnace furnace;
    private final Addon addon;
    private final Set<Class<?>> serviceTypes;
+   private final Set<Class<?>> singletonServiceTypes;
 
    private final Map<String, ExportedInstance<?>> instanceCache = new WeakHashMap<>();
    private final Map<String, Set<ExportedInstance<?>>> instancesCache = new WeakHashMap<>();
-   private final Set<Class<?>> singletonServiceTypes;
 
-   public SimpleServiceRegistry(Furnace furnace, Addon addon, Set<Class<?>> serviceTypes,
-            Set<Class<?>> singletonServiceTypes)
+   public SimpleServiceRegistry(Furnace furnace, Addon addon)
    {
       this.furnace = furnace;
       this.addon = addon;
-      this.serviceTypes = serviceTypes;
-      this.singletonServiceTypes = singletonServiceTypes;
+      Set<Class<?>> allServices = new HashSet<>();
+      allServices.addAll(locateServices(addon, Service.class));
+      // Maintaining legacy behavior
+      allServices.addAll(locateServices(addon, EventListener.class));
+      this.serviceTypes = allServices;
+      this.singletonServiceTypes = locateServices(addon, SingletonService.class);
    }
 
    @Override
@@ -64,8 +77,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
    @SuppressWarnings({ "unchecked", "rawtypes" })
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
    {
-      Addons.waitUntilStarted(addon);
-
       Set<ExportedInstance<T>> result = (Set) instancesCache.get(clazz.getName());
 
       if (result == null || result.isEmpty())
@@ -87,12 +98,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
                result.add(new SimpleSingletonExportedInstanceImpl(furnace, addon, type));
             }
          }
-
-         if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz) && isExtensionPointType(clazz))
-         {
-            result.add(new SimpleExportedInstanceImpl<>(furnace, addon, clazz));
-         }
-
          instancesCache.put(clazz.getName(), (Set) result);
       }
       return result;
@@ -118,7 +123,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
    public <T> ExportedInstance<T> getExportedInstance(final Class<T> clazz)
    {
       Assert.notNull(clazz, "Requested Class type may not be null");
-      Addons.waitUntilStarted(addon);
 
       ExportedInstance<T> result = (ExportedInstance<T>) instanceCache.get(clazz.getName());
       if (result == null)
@@ -146,9 +150,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
                      }
                   }
 
-                  if (ClassLoaders.ownsClass(addon.getClassLoader(), clazz) && isExtensionPointType(clazz))
-                     return new SimpleExportedInstanceImpl<>(furnace, addon, clazz);
-
                   return null;
                }
             });
@@ -165,13 +166,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
       }
       return result;
-   }
-
-   private boolean isExtensionPointType(Class<?> clazz)
-   {
-      if (EventListener.class.isAssignableFrom(clazz) || Service.class.isAssignableFrom(clazz))
-         return true;
-      return false;
    }
 
    @Override
@@ -200,7 +194,6 @@ public class SimpleServiceRegistry implements ServiceRegistry
    @Override
    public boolean hasService(Class<?> clazz)
    {
-      Addons.waitUntilStarted(addon);
       for (Class<?> service : getExportedTypes())
       {
          if (clazz.isAssignableFrom(service))
@@ -225,8 +218,72 @@ public class SimpleServiceRegistry implements ServiceRegistry
    }
 
    @Override
+   public void close()
+   {
+      this.serviceTypes.clear();
+      this.instanceCache.clear();
+      this.instancesCache.clear();
+      this.singletonServiceTypes.clear();
+   }
+
+   @Override
    public String toString()
    {
       return serviceTypes.toString();
+   }
+
+   private static Set<Class<?>> locateServices(Addon addon, Class<?> serviceType)
+   {
+      Set<Class<?>> allServiceTypes = new HashSet<>();
+      try
+      {
+         Enumeration<URL> resources = addon.getClassLoader()
+                  .getResources("/META-INF/services/" + serviceType.getName());
+         while (resources.hasMoreElements())
+         {
+            URL resource = resources.nextElement();
+            try (InputStream stream = resource.openStream();
+                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
+            {
+               String serviceName;
+               while ((serviceName = reader.readLine()) != null)
+               {
+                  if (ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
+                  {
+                     Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
+                     if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                     {
+                        allServiceTypes.add(type);
+                     }
+                  }
+                  else
+                  {
+                     log.log(Level.WARNING,
+                              "Service class not enabled due to underlying classloading error. If this is unexpected, "
+                                       + "enable DEBUG logging to see the full stack trace: "
+                                       + getClassLoadingErrorMessage(addon, serviceName));
+                     log.log(Level.FINE,
+                              "Service class not enabled due to underlying classloading error.",
+                              ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceName));
+                  }
+               }
+            }
+         }
+      }
+      catch (IOException ie)
+      {
+         log.log(Level.SEVERE, "Error while reading service classes", ie);
+      }
+      return allServiceTypes;
+   }
+
+   private static String getClassLoadingErrorMessage(Addon addon, String serviceType)
+   {
+      Throwable e = ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceType);
+      while (e.getCause() != null && e.getCause() != e)
+      {
+         e = e.getCause();
+      }
+      return e.getClass().getName() + ": " + e.getMessage();
    }
 }
