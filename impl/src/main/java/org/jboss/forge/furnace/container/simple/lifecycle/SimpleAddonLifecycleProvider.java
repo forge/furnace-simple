@@ -26,7 +26,7 @@ import org.jboss.forge.furnace.spi.ServiceRegistry;
  * 
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class SimpleContainerImpl implements AddonLifecycleProvider
+public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
 {
 
    private Furnace furnace;
