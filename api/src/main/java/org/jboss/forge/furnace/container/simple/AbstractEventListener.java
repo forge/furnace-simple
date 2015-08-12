@@ -56,26 +56,48 @@ public abstract class AbstractEventListener implements EventListener
       }
    }
 
+   /**
+    * This method is called when a {@link PostStartup} event is fired for the {@link Addon} this command belongs
+    */
    protected void handleThisPostStartup()
    {
       // Do nothing
    }
 
+   /**
+    * This method is called when a {@link PreShutdown} event is fired for the {@link Addon} this command belongs
+    */
    protected void handleThisPreShutdown()
    {
       // Do nothing
    }
 
+   /**
+    * This method is called when a {@link PreShutdown} event is fired
+    * 
+    * @param preShutdown the {@link PreShutdown} event
+    */
    protected void handleEvent(PreShutdown preShutdown)
    {
       // Do nothing
    }
 
+   /**
+    * This method is called when a {@link PostStartup} event is fired
+    * 
+    * @param postStartup the {@link PostStartup} event
+    */
    protected void handleEvent(PostStartup postStartup)
    {
       // Do nothing
    }
 
+   /**
+    * This method is called when the event is neither a {@link PostStartup} nor a {@link PreShutdown} event.
+    * 
+    * @param event the event to handle
+    * @param qualifiers the qualifiers, if any
+    */
    protected void handleCustomEvent(Object event, Annotation... qualifiers)
    {
       // Do nothing
