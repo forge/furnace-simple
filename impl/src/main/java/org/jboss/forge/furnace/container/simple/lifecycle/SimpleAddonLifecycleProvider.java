@@ -19,6 +19,7 @@ import org.jboss.forge.furnace.event.PreShutdown;
 import org.jboss.forge.furnace.lifecycle.AddonLifecycleProvider;
 import org.jboss.forge.furnace.lifecycle.ControlType;
 import org.jboss.forge.furnace.spi.ServiceRegistry;
+import org.jboss.forge.furnace.util.CachedServiceRegistry;
 
 /**
  * Implements a fast and simple {@link AddonLifecycleProvider} for the {@link Furnace} runtime. Allows {@link Service}
@@ -31,7 +32,7 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
 
    private Furnace furnace;
    private EventManager eventManager;
-   private SimpleServiceRegistry serviceRegistry;
+   private CachedServiceRegistry serviceRegistry;
 
    @Override
    public void initialize(Furnace furnace, AddonRegistry registry, Addon self) throws Exception
@@ -43,7 +44,7 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
    public void start(Addon addon) throws Exception
    {
       SimpleContainer.start(addon, furnace);
-      this.serviceRegistry = new SimpleServiceRegistry(furnace, addon);
+      this.serviceRegistry = new CachedServiceRegistry(new SimpleServiceRegistry(furnace, addon));
       this.eventManager = new SimpleEventManagerImpl(addon, serviceRegistry);
    }
 
@@ -52,7 +53,10 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
    {
       SimpleContainer.stop(addon);
       if (this.serviceRegistry != null)
-         this.serviceRegistry.close();
+      {
+         SimpleServiceRegistry simpleRegistry = (SimpleServiceRegistry) serviceRegistry.getDelegate();
+         simpleRegistry.close();
+      }
       this.serviceRegistry = null;
       this.eventManager = null;
    }
