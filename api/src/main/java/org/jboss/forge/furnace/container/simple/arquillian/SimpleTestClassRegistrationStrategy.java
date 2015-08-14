@@ -10,6 +10,7 @@ package org.jboss.forge.furnace.container.simple.arquillian;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.arquillian.spi.TestClassRegistrationStrategy;
+import org.jboss.forge.furnace.container.simple.Service;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 
 /**
@@ -34,7 +35,6 @@ public class SimpleTestClassRegistrationStrategy implements TestClassRegistratio
    @Override
    public void register(TestClass testClass, AddonArchive addonArchive)
    {
-      addonArchive.addAsServiceProvider("org.jboss.forge.furnace.container.simple.Service",
-               testClass.getJavaClass().getName());
+      addonArchive.addAsServiceProvider(Service.class, testClass.getJavaClass());
    }
 }
