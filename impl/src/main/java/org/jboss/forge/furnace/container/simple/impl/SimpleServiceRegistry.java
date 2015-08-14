@@ -46,11 +46,8 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
    public SimpleServiceRegistry(Furnace furnace, Addon addon)
    {
       this.addon = addon;
-      Set<Class<?>> allServices = new HashSet<>();
-      allServices.addAll(locateServices(addon, Service.class));
       // Maintaining legacy behavior
-      allServices.addAll(locateServices(addon, EventListener.class));
-      this.serviceTypes = allServices;
+      this.serviceTypes = locateServices(addon, Service.class, EventListener.class);
       this.singletonServiceTypes = locateServices(addon, SingletonService.class);
       for (Class<?> type : serviceTypes)
       {
@@ -203,39 +200,40 @@ public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
                + "]";
    }
 
-   private static Set<Class<?>> locateServices(Addon addon, Class<?> serviceType)
+   private static Set<Class<?>> locateServices(Addon addon, Class<?>... serviceTypes)
    {
       Set<Class<?>> allServiceTypes = new HashSet<>();
       try
       {
-         Enumeration<URL> resources = addon.getClassLoader()
-                  .getResources("/META-INF/services/" + serviceType.getName());
-         while (resources.hasMoreElements())
+         for (Class<?> serviceType : serviceTypes)
          {
-            URL resource = resources.nextElement();
-            try (InputStream stream = resource.openStream();
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
+            Enumeration<URL> resources = addon.getClassLoader()
+                     .getResources("/META-INF/services/" + serviceType.getName());
+            while (resources.hasMoreElements())
             {
-               String serviceName;
-               while ((serviceName = reader.readLine()) != null)
+               URL resource = resources.nextElement();
+               try (InputStream stream = resource.openStream();
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(stream)))
                {
-                  if (ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
+                  String serviceName;
+                  while ((serviceName = reader.readLine()) != null)
                   {
-                     Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
-                     if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                     try
                      {
-                        allServiceTypes.add(type);
+                        Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
+                        if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                        {
+                           allServiceTypes.add(type);
+                        }
                      }
-                  }
-                  else
-                  {
-                     log.log(Level.WARNING,
-                              "Service class not enabled due to underlying classloading error. If this is unexpected, "
-                                       + "enable DEBUG logging to see the full stack trace: "
-                                       + getClassLoadingErrorMessage(addon, serviceName));
-                     log.log(Level.FINE,
-                              "Service class not enabled due to underlying classloading error.",
-                              ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceName));
+                     catch (Exception e)
+                     {
+                        log.log(Level.WARNING,
+                                 "Service class not enabled due to underlying classloading error. If this is unexpected, "
+                                          + "enable DEBUG logging to see the full stack trace: "
+                                          + getClassLoadingErrorMessage(addon, serviceName),
+                                 e);
+                     }
                   }
                }
             }

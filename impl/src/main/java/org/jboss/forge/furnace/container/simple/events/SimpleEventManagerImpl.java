@@ -10,10 +10,10 @@ import java.lang.annotation.Annotation;
 
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.EventListener;
-import org.jboss.forge.furnace.container.simple.impl.SimpleServiceRegistry;
 import org.jboss.forge.furnace.event.EventException;
 import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.spi.ExportedInstance;
+import org.jboss.forge.furnace.spi.ServiceRegistry;
 
 /**
  * {@link EventManager} implementation for Simple container
@@ -22,9 +22,9 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
  */
 public class SimpleEventManagerImpl implements EventManager
 {
-   private final SimpleServiceRegistry serviceRegistry;
+   private final ServiceRegistry serviceRegistry;
 
-   public SimpleEventManagerImpl(Addon addon, SimpleServiceRegistry serviceRegistry)
+   public SimpleEventManagerImpl(Addon addon, ServiceRegistry serviceRegistry)
    {
       this.serviceRegistry = serviceRegistry;
    }
