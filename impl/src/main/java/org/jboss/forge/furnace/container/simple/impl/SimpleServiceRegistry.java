@@ -33,7 +33,7 @@ import org.jboss.forge.furnace.util.ClassLoaders;
 /**
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  */
-public class SimpleServiceRegistry implements ServiceRegistry, AutoCloseable
+public class SimpleServiceRegistry implements ServiceRegistry
 {
    private static final Logger log = Logger.getLogger(SimpleServiceRegistry.class.getName());
 

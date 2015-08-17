@@ -29,7 +29,6 @@ import org.jboss.forge.furnace.util.CachedServiceRegistry;
  */
 public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
 {
-
    private Furnace furnace;
    private EventManager eventManager;
    private CachedServiceRegistry serviceRegistry;
