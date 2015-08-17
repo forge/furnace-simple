@@ -57,7 +57,8 @@ public abstract class AbstractEventListener implements EventListener
    }
 
    /**
-    * This method is called when a {@link PostStartup} event is fired for the {@link Addon} this command belongs
+    * This method is called when a {@link PostStartup} event is fired to the {@link Addon} in which this listener is
+    * registered.
     */
    protected void handleThisPostStartup()
    {
@@ -65,7 +66,8 @@ public abstract class AbstractEventListener implements EventListener
    }
 
    /**
-    * This method is called when a {@link PreShutdown} event is fired for the {@link Addon} this command belongs
+    * This method is called when a {@link PreShutdown} event is fired for the {@link Addon} in which this listener is
+    * registered
     */
    protected void handleThisPreShutdown()
    {
