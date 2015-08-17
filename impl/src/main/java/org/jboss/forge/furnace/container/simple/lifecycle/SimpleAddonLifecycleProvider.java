@@ -31,7 +31,7 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
 {
    private Furnace furnace;
    private EventManager eventManager;
-   private CachedServiceRegistry serviceRegistry;
+   private ServiceRegistry serviceRegistry;
 
    @Override
    public void initialize(Furnace furnace, AddonRegistry registry, Addon self) throws Exception
@@ -53,8 +53,7 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
       SimpleContainer.stop(addon);
       if (this.serviceRegistry != null)
       {
-         SimpleServiceRegistry simpleRegistry = (SimpleServiceRegistry) serviceRegistry.getDelegate();
-         simpleRegistry.close();
+         serviceRegistry.close();
       }
       this.serviceRegistry = null;
       this.eventManager = null;
