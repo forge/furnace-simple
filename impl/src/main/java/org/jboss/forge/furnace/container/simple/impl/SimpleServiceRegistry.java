@@ -146,6 +146,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public <T> Set<Class<T>> getExportedTypes(Class<T> type)
    {
       Set<Class<T>> result = new HashSet<>();
@@ -153,7 +154,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
       {
          if (type.isAssignableFrom(serviceType))
          {
-            result.add(type);
+            result.add((Class<T>) serviceType);
          }
       }
       return result;
@@ -220,22 +221,22 @@ public class SimpleServiceRegistry implements ServiceRegistry
                   {
                      try
                      {
-                        if (ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
+                        Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
+                        if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
                         {
-                           Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
-                           if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
-                           {
-                              allServiceTypes.add(type);
-                           }
+                           log.log(Level.FINE, "Service {0} registered", type);
+                           allServiceTypes.add(type);
                         }
                      }
-                     catch (Exception e)
+                     catch (Throwable e)
                      {
                         log.log(Level.WARNING,
-                                 "Service class not enabled due to underlying classloading error. If this is unexpected, "
+                                 "Service class not enabled due to underlying classloading error. "
+                                          + "This may happen if the class is not yet loaded by Furnace. If this is unexpected, "
                                           + "enable DEBUG logging to see the full stack trace: "
-                                          + getClassLoadingErrorMessage(addon, serviceName),
-                                 e);
+                                          + getClassLoadingErrorMessage(addon, serviceName, e));
+                        log.log(Level.FINE,
+                                 "Service " + serviceName + " not enabled due to underlying classloading error.", e);
                      }
                   }
                }
@@ -249,9 +250,8 @@ public class SimpleServiceRegistry implements ServiceRegistry
       return allServiceTypes;
    }
 
-   private static String getClassLoadingErrorMessage(Addon addon, String serviceType)
+   private static String getClassLoadingErrorMessage(Addon addon, String serviceType, Throwable e)
    {
-      Throwable e = ClassLoaders.getClassLoadingExceptionFor(addon.getClassLoader(), serviceType);
       while (e.getCause() != null && e.getCause() != e)
       {
          e = e.getCause();
