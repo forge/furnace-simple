@@ -220,10 +220,13 @@ public class SimpleServiceRegistry implements ServiceRegistry
                   {
                      try
                      {
-                        Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
-                        if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                        if (ClassLoaders.containsClass(addon.getClassLoader(), serviceName))
                         {
-                           allServiceTypes.add(type);
+                           Class<?> type = ClassLoaders.loadClass(addon.getClassLoader(), serviceName);
+                           if (ClassLoaders.ownsClass(addon.getClassLoader(), type))
+                           {
+                              allServiceTypes.add(type);
+                           }
                         }
                      }
                      catch (Exception e)
