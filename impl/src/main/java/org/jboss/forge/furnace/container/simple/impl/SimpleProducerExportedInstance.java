@@ -6,8 +6,8 @@
  */
 package org.jboss.forge.furnace.container.simple.impl;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
+import org.jboss.forge.furnace.container.simple.Producer;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
 import org.jboss.forge.furnace.proxy.Proxies;
@@ -17,49 +17,67 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class SimpleSingletonExportedInstanceImpl<T> implements ExportedInstance<T>
+public class SimpleProducerExportedInstance<T> implements ExportedInstance<T>
 {
    private final Addon addon;
    private final Class<T> type;
-   private T delegate = null;
+   private final Class<? extends Producer<T>> producer;
+   private final boolean singleton;
+   private T delegate;
 
-   public SimpleSingletonExportedInstanceImpl(Furnace furnace, Addon addon, Class<T> clazz)
+   public SimpleProducerExportedInstance(Addon addon, Class<T> type, Class<? extends Producer<T>> producer,
+            boolean singleton)
    {
       this.addon = addon;
-      this.type = clazz;
+      this.type = type;
+      this.producer = producer;
+      this.singleton = singleton;
    }
 
    @Override
    public T get()
    {
-      if (delegate == null)
+      if (singleton)
       {
-         try
+         if (delegate == null)
          {
-            delegate = type.newInstance();
-            delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(
-                     addon.getClassLoader(), delegate));
+            delegate = newInstance();
          }
-         catch (Exception e)
-         {
-            throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.",
-                     e);
-         }
+         return delegate;
       }
-      return delegate;
+      else
+      {
+         return newInstance();
+      }
+   }
+
+   private T newInstance()
+   {
+      try
+      {
+         T delegate = producer.newInstance().get();
+         delegate = Proxies.enhance(addon.getClassLoader(), delegate,
+                  new ClassLoaderInterceptor(addon.getClassLoader(),
+                           delegate));
+         return delegate;
+      }
+      catch (Exception e)
+      {
+         throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.",
+                  e);
+      }
    }
 
    @Override
    public void release(T instance)
    {
-      if (instance == delegate)
-         delegate = null;
+      // no action required
    }
 
    @Override
    public String toString()
    {
-      return "Singleton: " + type.getName() + " from " + addon;
+      return type.getName() + " from " + addon;
    }
 
    @Override
@@ -93,7 +111,7 @@ public class SimpleSingletonExportedInstanceImpl<T> implements ExportedInstance<
          return false;
       if (getClass() != obj.getClass())
          return false;
-      SimpleSingletonExportedInstanceImpl other = (SimpleSingletonExportedInstanceImpl) obj;
+      SimpleProducerExportedInstance other = (SimpleProducerExportedInstance) obj;
       if (addon == null)
       {
          if (other.addon != null)
