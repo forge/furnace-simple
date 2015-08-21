@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -20,9 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.container.simple.EventListener;
+import org.jboss.forge.furnace.container.simple.Producer;
 import org.jboss.forge.furnace.container.simple.Service;
 import org.jboss.forge.furnace.container.simple.SingletonService;
 import org.jboss.forge.furnace.spi.ExportedInstance;
@@ -38,25 +40,65 @@ public class SimpleServiceRegistry implements ServiceRegistry
    private static final Logger log = Logger.getLogger(SimpleServiceRegistry.class.getName());
 
    private final Addon addon;
-   private final Set<Class<?>> serviceTypes;
-   private final Set<Class<?>> singletonServiceTypes;
+
+   private final Set<Class<?>> serviceTypes = new HashSet<>();
+   private final Set<Class<?>> singletonServiceTypes = new HashSet<>();
 
    private final Map<String, ExportedInstance<?>> instancesCache = new ConcurrentHashMap<>();
 
-   public SimpleServiceRegistry(Furnace furnace, Addon addon)
+   @SuppressWarnings("unchecked")
+   public SimpleServiceRegistry(Addon addon)
    {
       this.addon = addon;
-      // Maintaining legacy behavior
-      this.serviceTypes = locateServices(addon, Service.class, EventListener.class);
-      this.singletonServiceTypes = locateServices(addon, SingletonService.class);
-      for (Class<?> type : serviceTypes)
+      // Simple services
+      for (Class<?> type : locateServices(addon, Service.class, EventListener.class))
       {
-         instancesCache.put(type.getName(), new SimpleExportedInstanceImpl<>(furnace, addon, type));
+         Class<?> serviceType = type;
+         ExportedInstance<?> exportedInstance;
+         if (Producer.class.isAssignableFrom(type))
+         {
+            serviceType = extractProducesType(type);
+            exportedInstance = new SimpleProducerExportedInstance(addon, serviceType, type, false);
+         }
+         else
+         {
+            exportedInstance = new SimpleExportedInstance<>(addon, type);
+         }
+
+         serviceTypes.add(serviceType);
+         instancesCache.put(serviceType.getName(), exportedInstance);
       }
-      for (Class<?> type : singletonServiceTypes)
+
+      // Singleton services
+      for (Class<?> type : locateServices(addon, SingletonService.class))
       {
-         instancesCache.put(type.getName(), new SimpleSingletonExportedInstanceImpl<>(furnace, addon, type));
+         Class<?> serviceType = type;
+         ExportedInstance<?> exportedInstance;
+         if (Producer.class.isAssignableFrom(type))
+         {
+            serviceType = extractProducesType(type);
+            exportedInstance = new SimpleProducerExportedInstance(addon, serviceType, type, true);
+         }
+         else
+         {
+            exportedInstance = new SimpleSingletonExportedInstance<>(addon, type);
+         }
+         singletonServiceTypes.add(serviceType);
+         instancesCache.put(serviceType.getName(), exportedInstance);
       }
+   }
+
+   static Class<?> extractProducesType(Class<?> service)
+   {
+      Type[] genericInterfaces = service.getGenericInterfaces();
+      for (Type type : genericInterfaces)
+      {
+         if (type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == Producer.class)
+         {
+            return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
+         }
+      }
+      return null;
    }
 
    @Override

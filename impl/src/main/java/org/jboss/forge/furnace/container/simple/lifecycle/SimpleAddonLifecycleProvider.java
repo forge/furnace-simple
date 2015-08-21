@@ -43,7 +43,7 @@ public class SimpleAddonLifecycleProvider implements AddonLifecycleProvider
    public void start(Addon addon) throws Exception
    {
       SimpleContainer.start(addon, furnace);
-      this.serviceRegistry = new CachedServiceRegistry(new SimpleServiceRegistry(furnace, addon));
+      this.serviceRegistry = new CachedServiceRegistry(new SimpleServiceRegistry(addon));
       this.eventManager = new SimpleEventManagerImpl(addon, serviceRegistry);
    }
 

@@ -6,7 +6,6 @@
  */
 package org.jboss.forge.furnace.container.simple.impl;
 
-import org.jboss.forge.furnace.Furnace;
 import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.exception.ContainerException;
 import org.jboss.forge.furnace.proxy.ClassLoaderInterceptor;
@@ -17,14 +16,14 @@ import org.jboss.forge.furnace.spi.ExportedInstance;
  * @author <a href="mailto:lincolnbaxter@gmail.com">Lincoln Baxter, III</a>
  * 
  */
-public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
+public class SimpleSingletonExportedInstance<T> implements ExportedInstance<T>
 {
    private final Addon addon;
    private final Class<T> type;
+   private T delegate = null;
 
-   public SimpleExportedInstanceImpl(Furnace furnace, Addon addon, Class<T> clazz)
+   public SimpleSingletonExportedInstance(Addon addon, Class<T> clazz)
    {
-      // TODO remove unused parameter
       this.addon = addon;
       this.type = clazz;
    }
@@ -32,16 +31,19 @@ public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
    @Override
    public T get()
    {
-      T delegate = null;
-      try
+      if (delegate == null)
       {
-         delegate = type.newInstance();
-         delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(addon.getClassLoader(),
-                  delegate));
-      }
-      catch (Exception e)
-      {
-         throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.", e);
+         try
+         {
+            delegate = type.newInstance();
+            delegate = Proxies.enhance(addon.getClassLoader(), delegate, new ClassLoaderInterceptor(
+                     addon.getClassLoader(), delegate));
+         }
+         catch (Exception e)
+         {
+            throw new ContainerException("Could not create instance of [" + type.getName() + "] through reflection.",
+                     e);
+         }
       }
       return delegate;
    }
@@ -49,13 +51,14 @@ public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
    @Override
    public void release(T instance)
    {
-      // no action required
+      if (instance == delegate)
+         delegate = null;
    }
 
    @Override
    public String toString()
    {
-      return type.getName() + " from " + addon;
+      return "Singleton: " + type.getName() + " from " + addon;
    }
 
    @Override
@@ -89,7 +92,7 @@ public class SimpleExportedInstanceImpl<T> implements ExportedInstance<T>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      SimpleExportedInstanceImpl other = (SimpleExportedInstanceImpl) obj;
+      SimpleSingletonExportedInstance other = (SimpleSingletonExportedInstance) obj;
       if (addon == null)
       {
          if (other.addon != null)
