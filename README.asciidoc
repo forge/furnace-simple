@@ -27,11 +27,11 @@ In order for dependencies to use your services, you must add service types to th
 == Features
 
 Provides simple service registration mechanism::
-Service types are not required to extend the `org.jboss.forge.furnace.container.simple.Service` interface, but may do so for reference purposes.
+Service types should never extend the `org.jboss.forge.furnace.container.simple.Service` interface.
 +
 [source,java]
 ----
-public class ExampleService implements Service // (optional)
+public class ExampleService
 {
    // ...
 }
