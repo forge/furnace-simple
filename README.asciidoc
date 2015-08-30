@@ -1,6 +1,9 @@
 == Furnace Container: Simple
 :idprefix: id_ 
 
+image:https://travis-ci.org/forge/furnace-simple.svg?branch=master["Build Status", link="https://travis-ci.org/forge/furnace-simple"]
+image:http://img.shields.io/:license-EPL-blue.svg["License", link="https://www.eclipse.org/legal/epl-v10.html"]
+
 This addon is a 'Furnace container' that provides *lifecycle* and *service registry* support for dependent addons. 
 Addons may depend on this to provide service instances to dependencies.
 
