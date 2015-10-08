@@ -18,6 +18,7 @@ import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.forge.furnace.services.Imported;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,4 +52,16 @@ public class SingletonServiceTest
       assertNotNull(services.get());
       assertEquals(services.get().getRandomInteger(), services2.get().getRandomInteger());
    }
+
+   @Test
+   public void testReleaseShouldNotInvalidateInstance()
+   {
+      Imported<SimpleSingletonInstance> services = SimpleContainer.getServices(getClass().getClassLoader(),
+               SimpleSingletonInstance.class);
+      SimpleSingletonInstance instance = services.get();
+      assertNotNull(instance);
+      services.release(instance);
+      Assert.assertSame(instance, services.get());
+   }
+
 }
