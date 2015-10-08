@@ -91,7 +91,7 @@ public class SimpleSingletonExportedInstance<T> implements ExportedInstance<T>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      SimpleSingletonExportedInstance other = (SimpleSingletonExportedInstance) obj;
+      SimpleSingletonExportedInstance<?> other = (SimpleSingletonExportedInstance<?>) obj;
       if (addon == null)
       {
          if (other.addon != null)

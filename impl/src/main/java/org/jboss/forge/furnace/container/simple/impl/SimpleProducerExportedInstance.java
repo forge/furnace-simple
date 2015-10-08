@@ -111,7 +111,7 @@ public class SimpleProducerExportedInstance<T> implements ExportedInstance<T>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      SimpleProducerExportedInstance other = (SimpleProducerExportedInstance) obj;
+      SimpleProducerExportedInstance<?> other = (SimpleProducerExportedInstance<?>) obj;
       if (addon == null)
       {
          if (other.addon != null)

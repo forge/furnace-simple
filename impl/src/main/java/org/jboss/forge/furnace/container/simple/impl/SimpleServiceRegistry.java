@@ -46,7 +46,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
    private final Map<String, ExportedInstance<?>> instancesCache = new ConcurrentHashMap<>();
 
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    public SimpleServiceRegistry(Addon addon)
    {
       this.addon = addon;
@@ -116,7 +116,7 @@ public class SimpleServiceRegistry implements ServiceRegistry
    }
 
    @Override
-   @SuppressWarnings({ "unchecked", "rawtypes" })
+   @SuppressWarnings("unchecked")
    public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
    {
       Set<ExportedInstance<T>> result = new HashSet<>();

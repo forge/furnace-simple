@@ -87,7 +87,7 @@ public class SimpleExportedInstance<T> implements ExportedInstance<T>
          return false;
       if (getClass() != obj.getClass())
          return false;
-      SimpleExportedInstance other = (SimpleExportedInstance) obj;
+      SimpleExportedInstance<?> other = (SimpleExportedInstance<?>) obj;
       if (addon == null)
       {
          if (other.addon != null)
