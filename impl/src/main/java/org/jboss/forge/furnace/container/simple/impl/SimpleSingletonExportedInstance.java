@@ -51,8 +51,7 @@ public class SimpleSingletonExportedInstance<T> implements ExportedInstance<T>
    @Override
    public void release(T instance)
    {
-      if (instance == delegate)
-         delegate = null;
+      // no action required
    }
 
    @Override
