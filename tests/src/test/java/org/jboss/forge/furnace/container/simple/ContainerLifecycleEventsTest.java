@@ -8,8 +8,6 @@ package org.jboss.forge.furnace.container.simple;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependencies;
-import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -39,8 +37,7 @@ public class ContainerLifecycleEventsTest
                .addAsServiceProvider(Service.class, ContainerLifecycleEventsTest.class)
                .addAsServiceProvider(EventListener.class, LifecycleEventListener.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
-               );
+                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"));
 
       return archive;
    }

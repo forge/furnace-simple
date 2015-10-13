@@ -14,8 +14,6 @@ import java.util.Iterator;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.forge.arquillian.AddonDependencies;
-import org.jboss.forge.arquillian.AddonDependency;
 import org.jboss.forge.arquillian.AddonDeployment;
 import org.jboss.forge.arquillian.AddonDeployments;
 import org.jboss.forge.arquillian.archive.AddonArchive;
@@ -53,7 +51,7 @@ public class AddonRegistryInheritanceLookupTest
                         AddonDependencyEntry.create("test:dep2"),
                         AddonDependencyEntry.create("test:dep1")
 
-               );
+      );
 
       return archive;
    }
@@ -66,8 +64,7 @@ public class AddonRegistryInheritanceLookupTest
                .addAsServiceProvider(Service.class, PublishedServiceSubtype.class)
                .addAsAddonDependencies(
                         AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"),
-                        AddonDependencyEntry.create("test:dep1")
-               );
+                        AddonDependencyEntry.create("test:dep1"));
       return archive;
    }
 
@@ -78,8 +75,7 @@ public class AddonRegistryInheritanceLookupTest
                .addClass(PublishedService.class)
                .addAsServiceProvider(Service.class, PublishedService.class)
                .addAsAddonDependencies(
-                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple")
-               );
+                        AddonDependencyEntry.create("org.jboss.forge.furnace.container:simple"));
 
       return archive;
    }
