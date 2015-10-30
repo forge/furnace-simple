@@ -8,7 +8,9 @@
 package org.jboss.forge.furnace.container.simple;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 
+import org.hamcrest.CoreMatchers;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependencies;
@@ -43,6 +45,7 @@ public class ServiceLookupTest
                         SubMockImpl1.class);
    }
 
+   @SuppressWarnings("unchecked")
    @Test
    public void shouldResolveImpls() throws Exception
    {
@@ -52,6 +55,10 @@ public class ServiceLookupTest
       Assert.assertTrue(imported.isAmbiguous());
       Assert.assertEquals(3, Iterators.asList(imported).size());
       Assert.assertThat(registry.getExportedTypes(MockInterface.class).size(), equalTo(3));
+      Assert.assertThat(imported, CoreMatchers.<MockInterface> hasItems(
+               instanceOf(MockImpl1.class),
+               instanceOf(MockImpl2.class),
+               instanceOf(SubMockImpl1.class)));
    }
 
 }
