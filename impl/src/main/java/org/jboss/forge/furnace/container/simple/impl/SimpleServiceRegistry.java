@@ -107,9 +107,9 @@ public class SimpleServiceRegistry implements ServiceRegistry
    {
       try
       {
-         return getExportedInstances((Class<T>) Class.forName(clazz, false, addon.getClassLoader()));
+         return getExportedInstances((Class<T>) addon.getClassLoader().loadClass(clazz));
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return Collections.emptySet();
       }
@@ -117,8 +117,17 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
    @Override
    @SuppressWarnings("unchecked")
-   public <T> Set<ExportedInstance<T>> getExportedInstances(Class<T> clazz)
+   public <T> Set<ExportedInstance<T>> getExportedInstances(final Class<T> instanceType)
    {
+      Class<T> clazz = instanceType;
+      try
+      {
+         clazz = loadClass(clazz);
+      }
+      catch (ClassNotFoundException | LinkageError e)
+      {
+         return Collections.emptySet();
+      }
       Set<ExportedInstance<T>> result = new HashSet<>();
       for (Class<?> type : singletonServiceTypes)
       {
@@ -144,10 +153,10 @@ public class SimpleServiceRegistry implements ServiceRegistry
    {
       try
       {
-         Class<?> type = Class.forName(clazz, false, addon.getClassLoader());
+         Class<?> type = addon.getClassLoader().loadClass(clazz);
          return getExportedInstance((Class<T>) type);
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return null;
       }
@@ -155,10 +164,18 @@ public class SimpleServiceRegistry implements ServiceRegistry
 
    @Override
    @SuppressWarnings("unchecked")
-   public <T> ExportedInstance<T> getExportedInstance(final Class<T> clazz)
+   public <T> ExportedInstance<T> getExportedInstance(final Class<T> instanceType)
    {
-      Assert.notNull(clazz, "Requested Class type may not be null");
-
+      Assert.notNull(instanceType, "Requested Class type may not be null");
+      Class<T> clazz = instanceType;
+      try
+      {
+         clazz = loadClass(clazz);
+      }
+      catch (ClassNotFoundException | LinkageError cnfe)
+      {
+         return null;
+      }
       for (Class<?> type : singletonServiceTypes)
       {
          if (clazz.isAssignableFrom(type))
@@ -191,10 +208,20 @@ public class SimpleServiceRegistry implements ServiceRegistry
    @SuppressWarnings("unchecked")
    public <T> Set<Class<T>> getExportedTypes(Class<T> type)
    {
+      Class<?> clazz;
+      try
+      {
+         clazz = loadClass(type);
+      }
+      catch (ClassNotFoundException | LinkageError e)
+      {
+         // If cannot even load the class, don't bother testing existing services
+         return Collections.emptySet();
+      }
       Set<Class<T>> result = new HashSet<>();
       for (Class<?> serviceType : getExportedTypes())
       {
-         if (type.isAssignableFrom(serviceType))
+         if (clazz.isAssignableFrom(serviceType))
          {
             result.add((Class<T>) serviceType);
          }
@@ -203,8 +230,18 @@ public class SimpleServiceRegistry implements ServiceRegistry
    }
 
    @Override
-   public boolean hasService(Class<?> clazz)
+   public boolean hasService(Class<?> serviceType)
    {
+      Class<?> clazz;
+      try
+      {
+         clazz = loadClass(serviceType);
+      }
+      catch (ClassNotFoundException | LinkageError e)
+      {
+         // If cannot even load the class, don't bother testing existing services
+         return false;
+      }
       for (Class<?> service : getExportedTypes())
       {
          if (clazz.isAssignableFrom(service))
@@ -220,9 +257,9 @@ public class SimpleServiceRegistry implements ServiceRegistry
    {
       try
       {
-         return hasService(Class.forName(clazz, false, addon.getClassLoader()));
+         return hasService(addon.getClassLoader().loadClass(clazz));
       }
-      catch (ClassNotFoundException e)
+      catch (ClassNotFoundException | LinkageError e)
       {
          return false;
       }
@@ -300,4 +337,27 @@ public class SimpleServiceRegistry implements ServiceRegistry
       }
       return e.getClass().getName() + ": " + e.getMessage();
    }
+
+   /**
+    * Loads the class using the addon's {@link ClassLoader}.
+    * 
+    * Throws {@link ClassNotFoundException} if the class cannot be loaded
+    * 
+    * @param clazz the {@link Class} to be loaded
+    * @return a {@link Class} loaded by the addon's {@link ClassLoader}
+    * @throws ClassNotFoundException if the addon's {@link ClassLoader} cannot load the given class
+    */
+   @SuppressWarnings("unchecked")
+   private <T> Class<T> loadClass(Class<T> clazz) throws ClassNotFoundException
+   {
+      if (clazz.getClassLoader() != addon.getClassLoader())
+      {
+         return (Class<T>) addon.getClassLoader().loadClass(clazz.getName());
+      }
+      else
+      {
+         return clazz;
+      }
+   }
+
 }
