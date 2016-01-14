@@ -39,6 +39,9 @@
 
    <properties>
       <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+      <maven.compiler.target>1.8</maven.compiler.target>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      
       <forge.scm.connection>scm:git:git://github.com/forge/furnace-simple.git</forge.scm.connection>
       <forge.developer.connection>scm:git:git@github.com:forge/furnace-simple.git</forge.developer.connection>
       <forge.scm.url>http://github.com/forge/furnace-simple</forge.scm.url>
