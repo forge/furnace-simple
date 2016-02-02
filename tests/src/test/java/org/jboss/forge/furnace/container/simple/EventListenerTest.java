@@ -8,6 +8,7 @@
 package org.jboss.forge.furnace.container.simple;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,8 +17,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,19 +47,31 @@ public class EventListenerTest
    {
       Furnace furnace = SimpleContainer.getFurnace(this.getClass().getClassLoader());
       AddonRegistry addonRegistry = furnace.getAddonRegistry();
-      addonRegistry.getEventManager().fireEvent("Foo");
-      Assert.assertTrue("Event was not received", FooEventListener.eventFired);
+      AtomicInteger atomicInteger = new AtomicInteger();
+      addonRegistry.getEventManager().fireEvent(atomicInteger);
+      Assert.assertEquals(1, atomicInteger.intValue());
+   }
+
+   @Test
+   public void testFireEventFromAddon()
+   {
+      Addon addon = SimpleContainer.getAddon(getClass().getClassLoader());
+      EventManager eventManager = addon.getEventManager();
+      AtomicInteger atomicInteger = new AtomicInteger();
+      eventManager.fireEvent(atomicInteger);
+      Assert.assertEquals(1, atomicInteger.intValue());
    }
 
    public static class FooEventListener implements EventListener
    {
-      public static boolean eventFired;
-
       @Override
       public void handleEvent(Object event, Annotation... qualifiers)
       {
          Logger.getGlobal().log(Level.FINE, "##########EVENT: %s %s %n", new Object[] { event.getClass(), event });
-         eventFired = "Foo".equals(event);
+         if (event instanceof AtomicInteger)
+         {
+            ((AtomicInteger) event).incrementAndGet();
+         }
       }
    }
 

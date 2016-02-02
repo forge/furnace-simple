@@ -17,8 +17,10 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.arquillian.AddonDependencies;
 import org.jboss.forge.arquillian.archive.AddonArchive;
 import org.jboss.forge.furnace.Furnace;
+import org.jboss.forge.furnace.addons.Addon;
 import org.jboss.forge.furnace.addons.AddonRegistry;
 import org.jboss.forge.furnace.container.simple.lifecycle.SimpleContainer;
+import org.jboss.forge.furnace.event.EventManager;
 import org.jboss.forge.furnace.repositories.AddonDependencyEntry;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.junit.Assert;
@@ -71,6 +73,16 @@ public class EventListenerMultipleAddonsTest
       AddonRegistry addonRegistry = furnace.getAddonRegistry();
       AtomicInteger atomicInteger = new AtomicInteger();
       addonRegistry.getEventManager().fireEvent(atomicInteger);
+      Assert.assertEquals(1, atomicInteger.intValue());
+   }
+
+   @Test
+   public void testFireEventFromAddon()
+   {
+      Addon addon = SimpleContainer.getAddon(getClass().getClassLoader());
+      EventManager eventManager = addon.getEventManager();
+      AtomicInteger atomicInteger = new AtomicInteger();
+      eventManager.fireEvent(atomicInteger);
       Assert.assertEquals(1, atomicInteger.intValue());
    }
 
