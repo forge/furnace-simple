@@ -45,7 +45,7 @@
       <forge.developer.connection>scm:git:git@github.com:forge/furnace-simple.git</forge.developer.connection>
       <forge.scm.url>http://github.com/forge/furnace-simple</forge.scm.url>
       <version.furnace>${project.version}</version.furnace>
-      <version.junit>4.11</version.junit>
+      <version.junit>4.12</version.junit>
    </properties>
 
    <dependencyManagement>
